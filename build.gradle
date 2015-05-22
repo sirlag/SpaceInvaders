@@ -23,4 +23,8 @@ dependencies {
     compile 'com.jme3:jme3-niftygui:3.0.+'
     compile 'com.jme3:jme3-desktop:3.0.+'
     compile 'com.jme3:jme3-lwjgl:3.0.+'
+    compile 'com.esotericsoftware.minlog:minlog:1.2'
+    compile 'com.h2database:h2:1.4.187'
+    compile 'com.google.guava:guava:18.0'
+
 }
