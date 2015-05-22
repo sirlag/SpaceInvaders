@@ -6,14 +6,23 @@
 
 package HelloMonkey;
 
+import SpaceInvaders.Database.H2Manager;
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.builder.LayerBuilder;
+import de.lessvoid.nifty.builder.PanelBuilder;
+import de.lessvoid.nifty.builder.ScreenBuilder;
+import de.lessvoid.nifty.builder.TextBuilder;
+import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
+import de.lessvoid.nifty.screen.DefaultScreenController;
 
 public class HelloMonkey extends SimpleApplication{
 
@@ -24,6 +33,48 @@ public class HelloMonkey extends SimpleApplication{
 
     @Override
     public void simpleInitApp(){
+
+        NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort);
+        Nifty nifty = niftyDisplay.getNifty();
+        guiViewPort.addProcessor(niftyDisplay);
+        flyCam.setDragToRotate(true);
+
+        nifty.loadStyleFile("nifty-default-styles.xml");
+        nifty.loadControlFile("nifty-default-controls.xml");
+
+        nifty.addScreen("Hello_World", new ScreenBuilder("Hello Nifty Screen"){{
+            controller(new DefaultScreenController());
+
+            layer(new LayerBuilder("Layer_ID") {{
+                childLayoutVertical();
+
+                panel(new PanelBuilder("Panel_ID") {{
+                    childLayoutCenter();
+                    control(new ButtonBuilder("Button_ID", "Start"){{
+                    alignCenter();
+                    valignCenter();
+                    height("5%");
+                    width("15%");
+                    }});
+                    text(new TextBuilder() {{
+                        if(H2Manager.INSTANCE.getHighScore() != null)
+                            text(H2Manager.INSTANCE.getHighScore().toString());
+                        else
+                            text("There are no High Scores! Play to get one!");
+                        font("Interface/Fonts/Default.fnt");
+                        height("100%");
+                        width("100%");
+                    }});
+                }});
+            }});
+        }}.build(nifty));
+
+
+
+        nifty.gotoScreen("Hello_World");
+
+
+
         //blue box
         Box box1 = new Box(1, 1, 1);
         Geometry blue = new Geometry("Box", box1);
