@@ -1,6 +1,8 @@
 import SpaceInvaders.Database.H2Manager;
 import SpaceInvaders.Util.Score;
 
+import java.util.Optional;
+
 public class TestDatabase {
 
     @org.junit.Test
@@ -14,7 +16,7 @@ public class TestDatabase {
         assert(H2Manager.INSTANCE.addScore(new Score(10, "JNT")));
 
         //gets highest score of the two, make sure it was actually created, and then prints it.
-        Score score = H2Manager.INSTANCE.getHighScore();
+        Optional<Score> score = H2Manager.INSTANCE.getHighScore();
         assert(score != null);
         System.out.println(score);
     }

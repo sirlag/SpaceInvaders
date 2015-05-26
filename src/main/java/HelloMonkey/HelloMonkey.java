@@ -7,6 +7,7 @@
 package HelloMonkey;
 
 import SpaceInvaders.Database.H2Manager;
+import SpaceInvaders.Util.Score;
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -24,6 +25,8 @@ import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.screen.DefaultScreenController;
 
+import java.util.Optional;
+
 public class HelloMonkey extends SimpleApplication{
 
     public static void main(String[] args){
@@ -38,6 +41,8 @@ public class HelloMonkey extends SimpleApplication{
         Nifty nifty = niftyDisplay.getNifty();
         guiViewPort.addProcessor(niftyDisplay);
         flyCam.setDragToRotate(true);
+
+        H2Manager.INSTANCE.addScore(new Score(400_000_000, "NED"));
 
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
@@ -56,9 +61,21 @@ public class HelloMonkey extends SimpleApplication{
                     height("5%");
                     width("15%");
                     }});
+                }});
+                panel(new PanelBuilder("Panel_ID_2"){{
+                    childLayoutAbsolute();
+                    text(new TextBuilder(){{
+                        font("Interface/Fonts/Default.fnt");
+                        text("High Score!");
+                        height("80%");
+                        width("100%");
+
+                    }});
                     text(new TextBuilder() {{
-                        if(H2Manager.INSTANCE.getHighScore() != null)
-                            text(H2Manager.INSTANCE.getHighScore().toString());
+                        Optional<Score> score = H2Manager.INSTANCE.getHighScore();
+                        assert score != null;
+                        if (score.isPresent())
+                            text(score.get().toString());
                         else
                             text("There are no High Scores! Play to get one!");
                         font("Interface/Fonts/Default.fnt");

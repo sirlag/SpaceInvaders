@@ -125,7 +125,6 @@ public class SpaceInvaders extends SimpleApplication{
             else if (name.equals("Move Right") && !keyPressed)
                 enemyNode.move(.5f*direction, 0 ,0);
         }, "Move Left", "Move Right");
-
     }
 
     public void moveEnemyNode(){
