@@ -56,22 +56,24 @@ public class SpaceInvaders extends SimpleApplication{
 
     private Node border(){
         Material material = makeColoredMaterial(ColorRGBA.randomColor());
-        Box width = new Box(12, .5f, 3);
-        Box height = new Box(1, .5f, 3);
+        Box width = new Box(6, 1f, 3);
+        Box height = new Box(1, 3f, 3);
 
         Geometry top = new Geometry("Top", width);
         top.setMaterial(material);
-        top.setLocalTranslation(0,6,0);
+        top.setLocalTranslation(6,6,0);
 
         Geometry bottom = new Geometry("Bottom", width);
         bottom.setMaterial(material);
+        bottom.setLocalTranslation(6,0,0);
 
         Geometry leftSide = new Geometry("Left Side", height);
         leftSide.setMaterial(material);
+        leftSide.setLocalTranslation(0,3,0);
 
         Geometry rightSide = new Geometry("Right Side", height);
         rightSide.setMaterial(material);
-        rightSide.setLocalTranslation(12, 0, 0);
+        rightSide.setLocalTranslation(12, 3, 0);
 
         Node borderNode = new Node("Border");
         borderNode.attachChild(top);
@@ -128,7 +130,7 @@ public class SpaceInvaders extends SimpleApplication{
     }
 
     public void moveEnemyNode(){
-        for (Spatial spatial : enemyNode.getChildren()){
+        /*for (Spatial spatial : enemyNode.getChildren()){
             for (Spatial geo : border.getChildren()){
                 CollisionResults results = new CollisionResults();
                 spatial.collideWith(geo, results);
@@ -136,7 +138,7 @@ public class SpaceInvaders extends SimpleApplication{
                     direction *= -1;
             }
         }
-        enemyNode.move(.5f*direction, 0 , 0);
+        enemyNode.move(.5f*direction, 0 , 0);*/
     }
 
     private Material makeColoredMaterial(ColorRGBA color){
