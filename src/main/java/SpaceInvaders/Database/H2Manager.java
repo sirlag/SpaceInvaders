@@ -2,6 +2,7 @@ package SpaceInvaders.Database;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import SpaceInvaders.Util.Score;
 import com.esotericsoftware.minlog.Log;
@@ -76,7 +77,7 @@ public enum H2Manager {
         return scores;
     }
 
-    public Score getHighScore(){
+    public Optional<Score> getHighScore(){
         PreparedStatement ps;
         ResultSet rs;
 
@@ -84,7 +85,7 @@ public enum H2Manager {
             ps = conn.prepareStatement("SELECT * FROM Scores WHERE score = (SELECT MAX(SCORE) FROM SCORES)");
             rs = ps.executeQuery();
             rs.next();
-            return new Score(rs.getInt(1), rs.getNString(2));
+            return Optional.ofNullable(new Score(rs.getInt(1), rs.getNString(2)));
         }catch (SQLException ex){
             Log.error("Failed to get High Score", ex);
         }
