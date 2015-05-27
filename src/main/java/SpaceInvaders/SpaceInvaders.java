@@ -17,8 +17,8 @@ import com.jme3.scene.shape.Box;
 public class SpaceInvaders extends SimpleApplication{
 
     private Node enemyNode, border ,cannonNode;
-    private int direction;
-    private float iter;
+    private int direction, iter;
+    //private float iter;
 
     public static void main(String[] args){
         SpaceInvaders game = new SpaceInvaders();
@@ -44,7 +44,7 @@ public class SpaceInvaders extends SimpleApplication{
         rootNode.attachChild(enemyNode);
         rootNode.attachChild(cannonNode);
 
-        iter = System.currentTimeMillis();
+        iter = 0;//System.currentTimeMillis();
 
         AttachInputs();
     }
@@ -52,7 +52,8 @@ public class SpaceInvaders extends SimpleApplication{
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
-        if(System.currentTimeMillis()-iter%500==0) {
+        if(iter%30==0)//(System.currentTimeMillis()-iter)%20000==0)
+        {
             moveEnemyNode();
             super.simpleUpdate(tpf);
         }
@@ -147,10 +148,10 @@ public class SpaceInvaders extends SimpleApplication{
         inputManager.addMapping("Change Direction", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Move Left") && !keyPressed)
-                enemyNode.move(-.5f, 0, 0);
-            else if (name.equals("Move Right") && !keyPressed)
-                enemyNode.move(.5f*direction, 0 ,0);
+            if (name.equals("Move Left") && !keyPressed){}
+                //enemyNode.move(-.5f, 0, 0);
+            else if (name.equals("Move Right") && !keyPressed){}
+                //enemyNode.move(.5f*direction, 0 ,0);
         }, "Move Left", "Move Right");
     }
 
@@ -163,7 +164,22 @@ public class SpaceInvaders extends SimpleApplication{
                     direction *= -1;
             }
         }*/
+        rotateInvaders();
         enemyNode.move(.5f*direction, 0 , 0);
+    }
+
+    public void rotateInvaders()
+    {
+        for(int i = 0; i <enemyNode.getChildren().size();i++)
+        {
+            Spatial s = enemyNode.getChildren().get(i);
+            Vector3f v = s.getLocalTranslation();
+            float x = v.getX();
+            float y = v.getY();
+            float z = v.getZ();
+
+
+        }
     }
 
     private Material makeColoredMaterial(ColorRGBA color){
