@@ -17,7 +17,8 @@ import com.jme3.scene.shape.Box;
 public class SpaceInvaders extends SimpleApplication{
 
     private Node enemyNode, border ,cannonNode;
-    private int direction,iter;
+    private int direction;
+    private float iter;
 
     public static void main(String[] args){
         SpaceInvaders game = new SpaceInvaders();
@@ -33,17 +34,17 @@ public class SpaceInvaders extends SimpleApplication{
         direction = 1;
 
         border = border();
-        border.setLocalTranslation(0,0,-3);
+        border.setLocalTranslation(0,0,-6);
         enemyNode = invaderNode();
-        enemyNode.setLocalTranslation(-6,-1,-6);
+        enemyNode.setLocalTranslation(-6,-1,-9);
         cannonNode = makeCannon();
-        cannonNode.setLocalTranslation(new Vector3f(0,-5.9f,-6));
+        cannonNode.setLocalTranslation(new Vector3f(0,-5.9f,-9));
 
         rootNode.attachChild(border);
         rootNode.attachChild(enemyNode);
         rootNode.attachChild(cannonNode);
 
-        iter = 0;
+        iter = System.currentTimeMillis();
 
         AttachInputs();
     }
@@ -51,11 +52,11 @@ public class SpaceInvaders extends SimpleApplication{
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
-        if(iter%500==0) {
+        if(System.currentTimeMillis()-iter%500==0) {
             moveEnemyNode();
             super.simpleUpdate(tpf);
         }
-        //iter++;
+        iter++;
     }
 
     private Spatial makeInvader(ColorRGBA color, Vector3f offsetVector){
@@ -90,7 +91,7 @@ public class SpaceInvaders extends SimpleApplication{
         bottom.setMaterial(material);
         bottom.setLocalTranslation(0, -h, 0);
 
-        Geometry leftSide = new Geometry("Le2,ft Side", height);
+        Geometry leftSide = new Geometry("Left Side", height);
         leftSide.setMaterial(material);
         leftSide.setLocalTranslation(-w, 0, 0);
 
@@ -126,6 +127,7 @@ public class SpaceInvaders extends SimpleApplication{
                Would Have been so much cleaner.
              */
             switch (i/11){
+                //rotates invaders to center only at beginning
                 case 0  :   node.attachChild(makeInvader(ColorRGBA.Pink, offset).rotate(FastMath.PI / 8, (FastMath.PI / 100) * (5 - i % 11), 0));
                             break;
                 case 1  :
