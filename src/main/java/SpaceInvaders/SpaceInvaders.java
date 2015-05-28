@@ -1,9 +1,11 @@
 package SpaceInvaders;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.bounding.BoundingBox;
 import com.jme3.collision.CollisionResults;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -28,8 +30,8 @@ public class SpaceInvaders extends SimpleApplication{
 
     @Override
     public void simpleInitApp(){
-        //cam.setParallelProjection(true);
-        //cam.setLocation(new Vector3f(0f,0f,3f));
+        cam.setLocation(new Vector3f(0f,0f,9f));
+        flyCam.setEnabled(false);
 
         direction = 1;
 
@@ -65,6 +67,8 @@ public class SpaceInvaders extends SimpleApplication{
         invader.setLocalScale(.1f);
         invader.setLocalTranslation(offsetVector);
         invader.setMaterial(makeColoredMaterial(color));
+        //invader.setModelBound(new BoundingBox());
+        //invader.updateModelBound();
         return invader;
     }
 
@@ -105,6 +109,8 @@ public class SpaceInvaders extends SimpleApplication{
         borderNode.attachChild(bottom);
         borderNode.attachChild(leftSide);
         borderNode.attachChild(rightSide);
+
+        borderNode.getChildren().forEach(com.jme3.scene.Spatial::updateModelBound);
 
         return borderNode;
     }
@@ -147,25 +153,27 @@ public class SpaceInvaders extends SimpleApplication{
         inputManager.addMapping("Move Right", new KeyTrigger(KeyInput.KEY_RIGHT));
         inputManager.addMapping("Change Direction", new KeyTrigger(KeyInput.KEY_SPACE));
 
-        inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Move Left") && !keyPressed){}
-                //enemyNode.move(-.5f, 0, 0);
-            else if (name.equals("Move Right") && !keyPressed){}
-                //enemyNode.move(.5f*direction, 0 ,0);
+        inputManager.addListener((AnalogListener) (name, keyPressed, tpf) -> {
+            if (name.equals("Move Left"))
+                movePlayer(-1);
+            else if (name.equals("Move Right"))
+                movePlayer(1);
         }, "Move Left", "Move Right");
     }
 
     public void moveEnemyNode(){
-        /*for (Spatial spatial : enemyNode.getChildren()){
+        for (Spatial spatial : enemyNode.getChildren()){
             for (Spatial geo : border.getChildren()){
                 CollisionResults results = new CollisionResults();
-                spatial.collideWith(geo, results);
-                if (results.size() > 0)
+                spatial.collideWith(geo.getWorldBound(), results);
+                if (results.size() > 0) {
                     direction *= -1;
+                    enemyNode.move(0, -.05f, 0);
+                }
             }
-        }*/
+        }
         rotateInvaders();
-        enemyNode.move(.5f*direction, 0 , 0);
+        enemyNode.move(.05f * direction, 0, 0);
     }
 
     public void rotateInvaders()
@@ -177,8 +185,6 @@ public class SpaceInvaders extends SimpleApplication{
             float x = v.getX();
             float y = v.getY();
             float z = v.getZ();
-
-
         }
     }
 
@@ -186,6 +192,23 @@ public class SpaceInvaders extends SimpleApplication{
         Material newMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         newMaterial.setColor("Color", color);
         return newMaterial;
+    }
+
+    private boolean checkCollision(Spatial a, Spatial b) {
+        float distance = a.getLocalTranslation().distance(b.getLocalTranslation());
+        float maxDistance =  (Float)a.getUserData("radius") + (Float)b.getUserData("radius");
+        return distance <= maxDistance;
+    }
+
+    private void movePlayer(float direction){
+        for(Spatial geo : border.getChildren()){
+            CollisionResults cr = new CollisionResults();
+            cannonNode.getChild(0).collideWith(geo.getWorldBound(), cr);
+            if(cr.size() >= 1){
+                direction *= -1;
+            }
+        }
+        cannonNode.move(.05f*direction, 0  ,0);
     }
 
 }
