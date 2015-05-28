@@ -1,14 +1,15 @@
 package SpaceInvaders;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.audio.AudioNode;
 import com.jme3.collision.CollisionResults;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -18,7 +19,10 @@ import com.jme3.scene.shape.Box;
 public class SpaceInvaders extends SimpleApplication{
 
     private Node enemyNode, border ,cannonNode;
-    private int direction, iter,dir;
+    private int direction, iter;
+    private AudioNode bounce_sound;
+    private AudioNode shoot_sound;
+    private Float enemySpeed;
 
     public static void main(String[] args){
         SpaceInvaders game = new SpaceInvaders();
@@ -45,14 +49,16 @@ public class SpaceInvaders extends SimpleApplication{
         rootNode.attachChild(cannonNode);
 
         iter = 0;//System.currentTimeMillis();
-        dir =0;
+        enemySpeed = .05f;
+
         AttachInputs();
+        AttachSounds();
     }
 
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
-        if(iter%200==0)//(System.currentTimeMillis()-iter)%20000==0)
+        if(iter%30==0)//(System.currentTimeMillis()-iter)%20000==0)
         {
             moveEnemyNode();
             super.simpleUpdate(tpf);
@@ -70,8 +76,7 @@ public class SpaceInvaders extends SimpleApplication{
         return invader;
     }
 
-    private Node makeCannon()
-    {
+    private Node makeCannon() {
         Node node = new Node("cannon");
         Spatial cannon = assetManager.loadModel("assets/Models/Cannon/Cannon.j3o");
         cannon.setLocalScale(.1f);
@@ -117,9 +122,9 @@ public class SpaceInvaders extends SimpleApplication{
         Node node = new Node("Enemy");
         Vector3f offset;
         for (int i = 0; i < 55; i++){
-            offset = new Vector3f(i%11, 5-(i/11*1.05f), 0);
+            offset = new Vector3f(i%11, 5-(i/11), 0);
             if (i%11>0)
-                offset = offset.add(.4f*(i%11), 0, 0);
+                offset = offset.add(.3f*(i%11), 0, 0);
 
             /*
                 If Java Ever gets Pattern Matching, this would be
@@ -133,7 +138,7 @@ public class SpaceInvaders extends SimpleApplication{
              */
             switch (i/11){
                 //rotates invaders to center only at beginning
-                case 0  :   node.attachChild(makeInvader(ColorRGBA.Pink, offset).rotate(/*FastMath.PI / 8*/0, (FastMath.PI / 100) * (5 - i % 11), 0));
+                case 0  :   node.attachChild(makeInvader(ColorRGBA.Pink, offset).rotate(FastMath.PI / 8, (FastMath.PI / 100) * (5 - i % 11), 0));
                             break;
                 case 1  :
                 case 2  :   node.attachChild(makeInvader(ColorRGBA.Blue, offset).rotate(FastMath.PI / (i / 11 * 16), (FastMath.PI / 100) * (5 - i % 11), 0));
@@ -149,21 +154,19 @@ public class SpaceInvaders extends SimpleApplication{
     public void AttachInputs(){
         inputManager.addMapping("Move Left", new KeyTrigger(KeyInput.KEY_LEFT));
         inputManager.addMapping("Move Right", new KeyTrigger(KeyInput.KEY_RIGHT));
-        inputManager.addMapping("Change Direction", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Shoot", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener((AnalogListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Move Left")&&dir!=-1) {
-                if(movePlayer(-1))
-                    dir = -1;
-                else
-                    dir = 0;
-            }
-            else if (name.equals("Move Right")&&dir!=1)
-                if(movePlayer(1))
-                    dir = 1;
-                else
-                    dir = 0;
+            if (name.equals("Move Left"))
+                movePlayer(-1);
+            else if (name.equals("Move Right"))
+                movePlayer(1);
         }, "Move Left", "Move Right");
+
+        inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
+            if(name.equals("Shoot"))
+                shoot_sound.play();
+        }, "Shoot");
     }
 
     public void moveEnemyNode(){
@@ -172,28 +175,32 @@ public class SpaceInvaders extends SimpleApplication{
                 CollisionResults results = new CollisionResults();
                 spatial.collideWith(geo.getWorldBound(), results);
                 if (results.size() > 0) {
+                    if(geo.getName().equals("Bottom"))
+                        endGame();
+                    bounce_sound.play();
                     direction *= -1;
-                    enemyNode.move(0, -.05f, 0);
+                    enemyNode.move(0, -.025f, 0);
+                    enemySpeed += .001f;
                 }
             }
+            CollisionResults cr = new CollisionResults();
+            spatial.collideWith(cannonNode.getChild(0).getWorldBound(), cr);
         }
         //rotateInvaders();
-        enemyNode.move(.05f * direction, 0, 0);
+        enemyNode.move(enemySpeed * direction, 0, 0);
     }
 
-    public void rotateInvaders()
+    /*public void rotateInvaders()
     {
         for(int i = 0; i <enemyNode.getChildren().size();i++)
         {
             Spatial s = enemyNode.getChildren().get(i);
-            Quaternion q = s.getLocalRotation();
             Vector3f v = s.getLocalTranslation();
             float x = v.getX();
             float y = v.getY();
             float z = v.getZ();
-            s.rotate(/*(float)Math.atan(z/x)-q.getX()*/0,(float)Math.atan(z/y)-q.getY(),0-q.getZ());
         }
-    }
+    }*/
 
     private Material makeColoredMaterial(ColorRGBA color){
         Material newMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
@@ -201,19 +208,42 @@ public class SpaceInvaders extends SimpleApplication{
         return newMaterial;
     }
 
-    private boolean movePlayer(float direction2){
-        boolean col = false;
+    private void movePlayer(float direction){
         for(Spatial geo : border.getChildren()){
             CollisionResults cr = new CollisionResults();
             cannonNode.getChild(0).collideWith(geo.getWorldBound(), cr);
             if(cr.size() >= 1){
-                System.out.println(cr.getClosestCollision().toString());
-                direction2 *= -1;
-                col = true;
+                direction *= -1;
             }
         }
-        cannonNode.move(.05f*direction2, 0  ,0);
-        return col;
+        cannonNode.move(.05f * direction, 0, 0);
+    }
+
+    private void AttachSounds(){
+        bounce_sound = new AudioNode(assetManager, "assets/Sounds/Effects/Bounce.wav", false);
+        bounce_sound.setPositional(false);
+        bounce_sound.setLooping(false);
+        bounce_sound.setVolume(2);
+
+        shoot_sound = new AudioNode(assetManager, "assets/Sounds/Effects/Shoot.wav", false);
+        shoot_sound.setPositional(false);
+        shoot_sound.setLooping(false);
+        shoot_sound.setVolume(2);
+
+        AudioNode music_sound = new AudioNode(assetManager, "assets/Sounds/Music/InvadersStage.ogg", false);
+        music_sound.setPositional(false);
+        music_sound.setLooping(true);
+        music_sound.setVolume(3);
+        
+        rootNode.attachChild(bounce_sound);
+        rootNode.attachChild(shoot_sound);
+        rootNode.attachChild(music_sound);
+
+        music_sound.play();
+    }
+
+    private void endGame(){
+        System.out.println("Game Over!");
     }
 
 }
