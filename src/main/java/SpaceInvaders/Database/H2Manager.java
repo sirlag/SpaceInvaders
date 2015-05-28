@@ -9,6 +9,10 @@ import com.esotericsoftware.minlog.Log;
 
 import org.h2.jdbc.JdbcSQLException;
 
+/**
+ * H2Manager is a wrapper around H2 and jdbc, used to store scores for the space invaders game.
+ * The documented methods below are the only methods that should be used outside of this class.
+ */
 public enum H2Manager {
 
     INSTANCE;
@@ -44,6 +48,12 @@ public enum H2Manager {
         stat.execute("CREATE TABLE IF NOT EXISTS Scores (score INT, initials NVARCHAR)");
     }
 
+    /**
+     * A Method to add a new score into the database
+     *
+     * @param score The Score object to be added
+     * @return True if the score was added, false if it was not
+     */
     public boolean addScore(Score score){
         PreparedStatement ps;
 
@@ -60,6 +70,11 @@ public enum H2Manager {
         return true;
     }
 
+    /**
+     * A method designed to return all scores in the database.
+     *
+     * @return an ArrayList containing all Scores.
+     */
     public ArrayList<Score> getScores(){
         ResultSet rs;
         ArrayList<Score> scores = new ArrayList<>();
@@ -77,6 +92,12 @@ public enum H2Manager {
         return scores;
     }
 
+    /**
+     * A Method to get the highest score in the database.
+     * If there are no scores in the database, it instead returns null.
+     *
+     * @return and Optional&lt;&gt; value, containing either null or the Score object with the highest value
+     */
     public Optional<Score> getHighScore(){
         PreparedStatement ps;
         ResultSet rs;
