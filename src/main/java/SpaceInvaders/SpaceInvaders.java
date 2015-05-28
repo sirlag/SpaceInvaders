@@ -1,10 +1,8 @@
 package SpaceInvaders;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.bounding.BoundingBox;
 import com.jme3.collision.CollisionResults;
 import com.jme3.input.KeyInput;
-import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
@@ -20,7 +18,6 @@ public class SpaceInvaders extends SimpleApplication{
 
     private Node enemyNode, border ,cannonNode;
     private int direction, iter;
-    //private float iter;
 
     public static void main(String[] args){
         SpaceInvaders game = new SpaceInvaders();
@@ -192,12 +189,6 @@ public class SpaceInvaders extends SimpleApplication{
         Material newMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         newMaterial.setColor("Color", color);
         return newMaterial;
-    }
-
-    private boolean checkCollision(Spatial a, Spatial b) {
-        float distance = a.getLocalTranslation().distance(b.getLocalTranslation());
-        float maxDistance =  (Float)a.getUserData("radius") + (Float)b.getUserData("radius");
-        return distance <= maxDistance;
     }
 
     private void movePlayer(float direction){
