@@ -8,6 +8,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -44,7 +45,7 @@ public class SpaceInvaders extends SimpleApplication{
         rootNode.attachChild(enemyNode);
         rootNode.attachChild(cannonNode);
 
-        iter = 0;//System.currentTimeMillis();
+        iter = 1;//System.currentTimeMillis();
 
         AttachInputs();
     }
@@ -52,12 +53,12 @@ public class SpaceInvaders extends SimpleApplication{
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
-        if(iter%30==0)//(System.currentTimeMillis()-iter)%20000==0)
+        if(iter%500==0)//(System.currentTimeMillis()-iter)%20000==0)
         {
             moveEnemyNode();
             super.simpleUpdate(tpf);
         }
-        iter++;
+       // iter++;
     }
 
     private Spatial makeInvader(ColorRGBA color, Vector3f offsetVector){
@@ -145,14 +146,26 @@ public class SpaceInvaders extends SimpleApplication{
     public void AttachInputs(){
         inputManager.addMapping("Move Left", new KeyTrigger(KeyInput.KEY_LEFT));
         inputManager.addMapping("Move Right", new KeyTrigger(KeyInput.KEY_RIGHT));
+        inputManager.addMapping("Move Down", new KeyTrigger(KeyInput.KEY_DOWN));
+        inputManager.addMapping("Move Up", new KeyTrigger(KeyInput.KEY_UP));
         inputManager.addMapping("Change Direction", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Move Left") && !keyPressed){}
-                //enemyNode.move(-.5f, 0, 0);
-            else if (name.equals("Move Right") && !keyPressed){}
-                //enemyNode.move(.5f*direction, 0 ,0);
-        }, "Move Left", "Move Right");
+            if (name.equals("Move Left") && !keyPressed) {
+                enemyNode.move(-.5f, 0, 0);
+                cannonNode.move(-1f,0,0);
+            }
+            else if (name.equals("Move Right") && !keyPressed) {
+                enemyNode.move(.5f * direction, 0, 0);
+                cannonNode.move(1f,0,0);
+            }
+            else if (name.equals("Move Down") && !keyPressed) {
+                enemyNode.move(0, -.5f, 0);
+            }
+            else if (name.equals("Move Up") && !keyPressed) {
+                enemyNode.move(0, .5f, 0);
+            }
+        }, "Move Left", "Move Right","Move Down", "Move Up");
     }
 
     public void moveEnemyNode(){
@@ -170,14 +183,17 @@ public class SpaceInvaders extends SimpleApplication{
 
     public void rotateInvaders()
     {
+        float borderBack = border.getLocalTranslation().getZ();
+        Quaternion q;
         for(int i = 0; i <enemyNode.getChildren().size();i++)
         {
             Spatial s = enemyNode.getChildren().get(i);
+            q = s.getLocalRotation();
             Vector3f v = s.getLocalTranslation();
             float x = v.getX();
             float y = v.getY();
-            float z = v.getZ();
-
+            float z = v.getZ()+borderBack;
+            s.rotate((float)Math.atan(z/x)-q.getX(),(float)Math.atan(z/y)-q.getY(),0-q.getZ());
 
         }
     }
