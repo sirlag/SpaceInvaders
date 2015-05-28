@@ -8,6 +8,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -17,7 +18,7 @@ import com.jme3.scene.shape.Box;
 public class SpaceInvaders extends SimpleApplication{
 
     private Node enemyNode, border ,cannonNode;
-    private int direction, iter;
+    private int direction, iter,dir;
 
     public static void main(String[] args){
         SpaceInvaders game = new SpaceInvaders();
@@ -44,14 +45,14 @@ public class SpaceInvaders extends SimpleApplication{
         rootNode.attachChild(cannonNode);
 
         iter = 0;//System.currentTimeMillis();
-
+        dir =0;
         AttachInputs();
     }
 
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
-        if(iter%30==0)//(System.currentTimeMillis()-iter)%20000==0)
+        if(iter%200==0)//(System.currentTimeMillis()-iter)%20000==0)
         {
             moveEnemyNode();
             super.simpleUpdate(tpf);
@@ -116,9 +117,9 @@ public class SpaceInvaders extends SimpleApplication{
         Node node = new Node("Enemy");
         Vector3f offset;
         for (int i = 0; i < 55; i++){
-            offset = new Vector3f(i%11, 5-(i/11), 0);
+            offset = new Vector3f(i%11, 5-(i/11*1.05f), 0);
             if (i%11>0)
-                offset = offset.add(.3f*(i%11), 0, 0);
+                offset = offset.add(.4f*(i%11), 0, 0);
 
             /*
                 If Java Ever gets Pattern Matching, this would be
@@ -132,7 +133,7 @@ public class SpaceInvaders extends SimpleApplication{
              */
             switch (i/11){
                 //rotates invaders to center only at beginning
-                case 0  :   node.attachChild(makeInvader(ColorRGBA.Pink, offset).rotate(FastMath.PI / 8, (FastMath.PI / 100) * (5 - i % 11), 0));
+                case 0  :   node.attachChild(makeInvader(ColorRGBA.Pink, offset).rotate(/*FastMath.PI / 8*/0, (FastMath.PI / 100) * (5 - i % 11), 0));
                             break;
                 case 1  :
                 case 2  :   node.attachChild(makeInvader(ColorRGBA.Blue, offset).rotate(FastMath.PI / (i / 11 * 16), (FastMath.PI / 100) * (5 - i % 11), 0));
@@ -151,10 +152,17 @@ public class SpaceInvaders extends SimpleApplication{
         inputManager.addMapping("Change Direction", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener((AnalogListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Move Left"))
-                movePlayer(-1);
-            else if (name.equals("Move Right"))
-                movePlayer(1);
+            if (name.equals("Move Left")&&dir!=-1) {
+                if(movePlayer(-1))
+                    dir = -1;
+                else
+                    dir = 0;
+            }
+            else if (name.equals("Move Right")&&dir!=1)
+                if(movePlayer(1))
+                    dir = 1;
+                else
+                    dir = 0;
         }, "Move Left", "Move Right");
     }
 
@@ -169,7 +177,7 @@ public class SpaceInvaders extends SimpleApplication{
                 }
             }
         }
-        rotateInvaders();
+        //rotateInvaders();
         enemyNode.move(.05f * direction, 0, 0);
     }
 
@@ -178,10 +186,12 @@ public class SpaceInvaders extends SimpleApplication{
         for(int i = 0; i <enemyNode.getChildren().size();i++)
         {
             Spatial s = enemyNode.getChildren().get(i);
+            Quaternion q = s.getLocalRotation();
             Vector3f v = s.getLocalTranslation();
             float x = v.getX();
             float y = v.getY();
             float z = v.getZ();
+            s.rotate(/*(float)Math.atan(z/x)-q.getX()*/0,(float)Math.atan(z/y)-q.getY(),0-q.getZ());
         }
     }
 
@@ -191,15 +201,19 @@ public class SpaceInvaders extends SimpleApplication{
         return newMaterial;
     }
 
-    private void movePlayer(float direction){
+    private boolean movePlayer(float direction2){
+        boolean col = false;
         for(Spatial geo : border.getChildren()){
             CollisionResults cr = new CollisionResults();
             cannonNode.getChild(0).collideWith(geo.getWorldBound(), cr);
             if(cr.size() >= 1){
-                direction *= -1;
+                System.out.println(cr.getClosestCollision().toString());
+                direction2 *= -1;
+                col = true;
             }
         }
-        cannonNode.move(.05f*direction, 0  ,0);
+        cannonNode.move(.05f*direction2, 0  ,0);
+        return col;
     }
 
 }
