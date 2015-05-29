@@ -1,8 +1,10 @@
 package SpaceInvaders;
 
+import SpaceInvaders.Util.Score;
 import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
 import com.jme3.collision.CollisionResults;
+import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.ActionListener;
@@ -19,10 +21,12 @@ import com.jme3.scene.shape.Box;
 public class SpaceInvaders extends SimpleApplication{
 
     private Node enemyNode, border ,cannonNode;
-    private int direction, iter;
+    private int direction, iter, dir;
     private AudioNode bounce_sound;
     private AudioNode shoot_sound;
     private Float enemySpeed;
+    private BitmapText scoreText;
+    private Score gameScore;
 
     public static void main(String[] args){
         SpaceInvaders game = new SpaceInvaders();
@@ -37,6 +41,9 @@ public class SpaceInvaders extends SimpleApplication{
 
         direction = 1;
 
+        createText();
+        gameScore = new Score(0, "AAA");
+
         border = border();
         border.setLocalTranslation(0,0,-6);
         enemyNode = invaderNode();
@@ -47,8 +54,10 @@ public class SpaceInvaders extends SimpleApplication{
         rootNode.attachChild(border);
         rootNode.attachChild(enemyNode);
         rootNode.attachChild(cannonNode);
+        rootNode.attachChild(scoreText);
 
         iter = 0;//System.currentTimeMillis();
+        dir = 0;
         enemySpeed = .05f;
 
         AttachInputs();
@@ -61,10 +70,19 @@ public class SpaceInvaders extends SimpleApplication{
         if(iter%30==0)//(System.currentTimeMillis()-iter)%20000==0)
         {
             moveEnemyNode();
+            scoreText.setText("Score: " + gameScore.getScore());
             super.simpleUpdate(tpf);
         }
         iter++;
     }
+
+    private void createText(){
+        scoreText = new BitmapText(guiFont,false);
+        scoreText.setSize(guiFont.getCharSet().getRenderedSize());
+        scoreText.setText("Score : 0");
+        scoreText.setLocalTranslation(70, 30,-280);
+    }
+
 
     private Spatial makeInvader(ColorRGBA color, Vector3f offsetVector){
         Spatial invader = assetManager.loadModel("assets/Models/Invader/Invader.j3o");
@@ -73,6 +91,7 @@ public class SpaceInvaders extends SimpleApplication{
         invader.setMaterial(makeColoredMaterial(color));
         //invader.setModelBound(new BoundingBox());
         //invader.updateModelBound();
+        invader.setUserData("Score",50);
         return invader;
     }
 
@@ -138,13 +157,13 @@ public class SpaceInvaders extends SimpleApplication{
              */
             switch (i/11){
                 //rotates invaders to center only at beginning
-                case 0  :   node.attachChild(makeInvader(ColorRGBA.Pink, offset).rotate(FastMath.PI / 8, (FastMath.PI / 100) * (5 - i % 11), 0));
+                case 0  :   node.attachChild(makeInvader(ColorRGBA.Pink, offset));//.rotate(FastMath.PI / 8, (FastMath.PI / 100) * (5 - i % 11), 0));
                             break;
                 case 1  :
-                case 2  :   node.attachChild(makeInvader(ColorRGBA.Blue, offset).rotate(FastMath.PI / (i / 11 * 16), (FastMath.PI / 100) * (5 - i % 11), 0));
+                case 2  :   node.attachChild(makeInvader(ColorRGBA.Blue, offset));//.rotate(FastMath.PI / (i / 11 * 16), (FastMath.PI / 100) * (5 - i % 11), 0));
                             break;
                 case 3  :
-                case 4  :   node.attachChild(makeInvader(ColorRGBA.Green, offset).rotate(0, (FastMath.PI / 100) * (5 - i % 11), 0));
+                case 4  :   node.attachChild(makeInvader(ColorRGBA.Green, offset));//.rotate(0, (FastMath.PI / 100) * (5 - i % 11), 0));
                             break;
             }
         }
@@ -157,15 +176,23 @@ public class SpaceInvaders extends SimpleApplication{
         inputManager.addMapping("Shoot", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener((AnalogListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Move Left"))
-                movePlayer(-1);
-            else if (name.equals("Move Right"))
-                movePlayer(1);
+            if (name.equals("Move Left")&&dir!=-1)
+                if(movePlayer(-1))
+                    dir = -1;
+                else
+                    dir = 0;
+            else if (name.equals("Move Right")&&dir!=1)
+                if(movePlayer(1))
+                    dir = 1;
+                else
+                    dir = 0;
         }, "Move Left", "Move Right");
 
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
-            if(name.equals("Shoot"))
+            if(name.equals("Shoot") && keyPressed) {
                 shoot_sound.play();
+                gameScore.addScore(50);
+            }
         }, "Shoot");
     }
 
@@ -208,38 +235,44 @@ public class SpaceInvaders extends SimpleApplication{
         return newMaterial;
     }
 
-    private void movePlayer(float direction){
+    private boolean movePlayer(float direction){
+        boolean col = false;
         for(Spatial geo : border.getChildren()){
             CollisionResults cr = new CollisionResults();
             cannonNode.getChild(0).collideWith(geo.getWorldBound(), cr);
             if(cr.size() >= 1){
                 direction *= -1;
+                col = true;
             }
         }
         cannonNode.move(.05f * direction, 0, 0);
+        return col;
     }
 
     private void AttachSounds(){
+        AudioNode music_sound = new AudioNode(assetManager, "assets/Sounds/Music/InvadersStage.ogg", false);
+        music_sound.setPositional(false);
+        music_sound.setLooping(true);
+        music_sound.setVolume(3);
+        rootNode.attachChild(music_sound);
+        music_sound.play();
+
         bounce_sound = new AudioNode(assetManager, "assets/Sounds/Effects/Bounce.wav", false);
         bounce_sound.setPositional(false);
         bounce_sound.setLooping(false);
-        bounce_sound.setVolume(2);
+        bounce_sound.setVolume(5);
 
         shoot_sound = new AudioNode(assetManager, "assets/Sounds/Effects/Shoot.wav", false);
         shoot_sound.setPositional(false);
         shoot_sound.setLooping(false);
         shoot_sound.setVolume(2);
 
-        AudioNode music_sound = new AudioNode(assetManager, "assets/Sounds/Music/InvadersStage.ogg", false);
-        music_sound.setPositional(false);
-        music_sound.setLooping(true);
-        music_sound.setVolume(3);
-        
+
+
         rootNode.attachChild(bounce_sound);
         rootNode.attachChild(shoot_sound);
-        rootNode.attachChild(music_sound);
 
-        music_sound.play();
+
     }
 
     private void endGame(){
