@@ -18,10 +18,12 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
+import java.util.Random;
+
 public class SpaceInvaders extends SimpleApplication{
 
-    private Node enemyNode, border ,cannonNode;
-    private int direction, iter, dir;
+    private Node enemyNode, border ,cannonNode, ufoNode;
+    private int direction, iter, dir, ufoD;
     private AudioNode bounce_sound;
     private AudioNode shoot_sound;
     private Float enemySpeed;
@@ -51,10 +53,14 @@ public class SpaceInvaders extends SimpleApplication{
         cannonNode = makeCannon();
         cannonNode.setLocalTranslation(new Vector3f(0,-5.9f,-9));
 
+        ufoNode = new Node("UFO");
+        makeUFO();
+
         rootNode.attachChild(border);
         rootNode.attachChild(enemyNode);
         rootNode.attachChild(cannonNode);
         rootNode.attachChild(scoreText);
+        rootNode.attachChild(ufoNode);
 
         iter = 0;//System.currentTimeMillis();
         dir = 0;
@@ -74,6 +80,9 @@ public class SpaceInvaders extends SimpleApplication{
             super.simpleUpdate(tpf);
         }
         iter++;
+        if(ufoNode.getChildren().size() > 0){
+            //moveUFO();
+        }
     }
 
     private void createText(){
@@ -102,6 +111,21 @@ public class SpaceInvaders extends SimpleApplication{
         cannon.setMaterial(makeColoredMaterial(ColorRGBA.Red));
         node.attachChild(cannon);
         return node;
+    }
+
+    private void makeUFO() {
+        Spatial ufo = assetManager.loadModel("assets/Models/UFO/UFO.j3o");
+        ufo.setLocalScale(.1f);
+        ufo.setMaterial(makeColoredMaterial(ColorRGBA.White));
+        ufoNode.attachChild(ufo);
+        Random random = new Random();
+        switch (random.nextInt(1)){
+            case 0 : ufoD = -1;
+                     break;
+            case 1 : ufoD = 1;
+                     break;
+        }
+        ufoNode.setLocalTranslation(3, 5, -9);
     }
 
     private Node border(){
