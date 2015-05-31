@@ -1,5 +1,6 @@
 package SpaceInvaders;
 
+import SpaceInvaders.Database.H2Manager;
 import SpaceInvaders.Util.Score;
 import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
@@ -11,25 +12,24 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-//import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
+import java.util.Optional;
 import java.util.Random;
 
 public class SpaceInvaders extends SimpleApplication {
 
-
-    private Node enemyNode, border, cannonNode, lives, ufoNode;
-    private int direction, iter, dir, ufoD;
-    private AudioNode bounce_sound;
-    private AudioNode shoot_sound;
+    private Node enemyNode, border ,cannonNode, lives, ufoNode;
+    private int direction, iter, dir, ufoD, highScore;
+    private AudioNode bounce_sound, shoot_sound, ufo_sound;
     private Float enemySpeed;
     private BitmapText scoreText, highscoreText, livesText;
-    private Score gameScore, highScore;
+    private Score gameScore;
+    private Boolean ufoExists;
 
     public static void main(String[] args) {
         SpaceInvaders game = new SpaceInvaders();
@@ -47,7 +47,6 @@ public class SpaceInvaders extends SimpleApplication {
         createText();
         makeLives();
         gameScore = new Score(0, "AAA");
-        highScore = new Score(0, "BBB");
 
         border = border();
         border.setLocalTranslation(0, 0, -6);
@@ -57,7 +56,7 @@ public class SpaceInvaders extends SimpleApplication {
         cannonNode.setLocalTranslation(new Vector3f(0, -5.9f, -9));
 
         ufoNode = new Node("UFO");
-        makeUFO();
+        ufoExists = false;
 
         rootNode.attachChild(border);
         rootNode.attachChild(enemyNode);
@@ -74,6 +73,8 @@ public class SpaceInvaders extends SimpleApplication {
 
         AttachInputs();
         AttachSounds();
+
+        makeUFO();
     }
 
     @Override
@@ -83,16 +84,16 @@ public class SpaceInvaders extends SimpleApplication {
         {
             moveEnemyNode();
             scoreText.setText("Score: " + gameScore.getScore());
-            if (highThanHighScore()) {
-                highScore = gameScore;
-                highscoreText.setText("High Score: " + highScore.getScore());
-            }
             super.simpleUpdate(tpf);
         }
         iter++;
-        /*if(ufoNode.getChildren().size() > 0){
-            //moveUFO();
-        }*/
+        if(ufoExists){
+            moveUFO();
+        }
+        if(gameScore.getScore() > highScore){
+            highScore = gameScore.getScore();
+            highscoreText.setText(String.format("High Score : %d - YOU", gameScore.getScore()));
+        }
     }
 
     private void createText() {
@@ -104,9 +105,17 @@ public class SpaceInvaders extends SimpleApplication {
 
         highscoreText = new BitmapText(guiFont, false);
         highscoreText.setSize(guiFont.getCharSet().getRenderedSize());
-        highscoreText.setText("High Score : 0");
+        Optional<Score> score = H2Manager.INSTANCE.getHighScore();
+        if(score != null && score.isPresent()) {
+            highscoreText.setText(String.format("High Score : %d - %s", score.get().getScore(), score.get().getInitials()));
+            highScore = score.get().getScore();
+        }
+        else {
+            highscoreText.setText("High Score : 0");
+            highScore = 0;
+        }
         highscoreText.setLocalScale(.02f);
-        highscoreText.setLocalTranslation(-5, 3.5f, 0);
+        highscoreText.setLocalTranslation(-5,3.5f,0);
 
         livesText = new BitmapText(guiFont, false);
         livesText.setSize(guiFont.getCharSet().getRenderedSize());
@@ -126,8 +135,12 @@ public class SpaceInvaders extends SimpleApplication {
         }
     }
 
-    public void removeLife() {
-        lives.getChildren().remove(lives.getChildren().size() - 1);
+    public void removeLife()
+    {
+        if(lives.getChildren().size() > 0)
+            lives.getChildren().remove(lives.getChildren().size()-1);
+        else
+            endGame();
     }
 
 
@@ -152,20 +165,21 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     private void makeUFO() {
+        ufoExists = true;
         Spatial ufo = assetManager.loadModel("assets/Models/UFO/UFO.j3o");
         ufo.setLocalScale(.1f);
         ufo.setMaterial(makeColoredMaterial(ColorRGBA.White));
         ufoNode.attachChild(ufo);
         Random random = new Random();
-        switch (random.nextInt(1)) {
-            case 0:
-                ufoD = -1;
-                break;
-            case 1:
-                ufoD = 1;
-                break;
+        switch (random.nextInt(2)){
+            case 0 : ufoD = -1;
+                     break;
+            case 1 : ufoD = 1;
+                     break;
         }
-        ufoNode.setLocalTranslation(3, 5, -9);
+        ufoNode.setLocalTranslation(0, 5, -9);
+        ufo.setLocalTranslation(9*(-1*ufoD), 0, 0);
+        ufo_sound.play();
     }
 
     private Node border() {
@@ -317,7 +331,22 @@ public class SpaceInvaders extends SimpleApplication {
         return col;
     }
 
-    private void AttachSounds() {
+
+    private void moveUFO(){
+        for (Spatial geo : border.getChildren()){
+            CollisionResults results = new CollisionResults();
+            ufoNode.getChild(1).collideWith(geo.getWorldBound(), results);
+            if (results.size() > 0) {
+                ufoNode.getChildren().remove(1);
+                ufoExists = false;
+                ufo_sound.stop();
+                return;
+            }
+        }
+        ufoNode.getChild(1).move(.003f * ufoD, 0, 0);
+    }
+
+    private void AttachSounds(){
         AudioNode music_sound = new AudioNode(assetManager, "assets/Sounds/Music/InvadersStage.ogg", false);
         music_sound.setPositional(false);
         music_sound.setLooping(true);
@@ -335,11 +364,14 @@ public class SpaceInvaders extends SimpleApplication {
         shoot_sound.setLooping(false);
         shoot_sound.setVolume(2);
 
+        ufo_sound = new AudioNode(assetManager, "assets/Sounds/Effects/UFO.wav", false);
+        ufo_sound.setPositional(false);
+        ufo_sound.setLooping(true);
+        ufo_sound.setVolume(2);
 
         rootNode.attachChild(bounce_sound);
         rootNode.attachChild(shoot_sound);
-
-
+        ufoNode.attachChild(ufo_sound);
     }
 
     private void endGame() {
@@ -347,7 +379,4 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
 
-    private boolean highThanHighScore() {
-        return gameScore.getScore() >= highScore.getScore();
-    }
 }
