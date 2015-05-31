@@ -19,5 +19,8 @@ public class TestDatabase {
         Optional<Score> score = H2Manager.INSTANCE.getHighScore();
         assert(score != null);
         System.out.println(score);
+
+        //Assuming the other tests go well, drops the table in preparation for production
+        H2Manager.INSTANCE.reset();
     }
 }
