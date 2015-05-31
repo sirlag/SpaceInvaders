@@ -18,16 +18,14 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
-import java.util.Random;
-
 public class SpaceInvaders extends SimpleApplication{
 
-    private Node enemyNode, border ,cannonNode, ufoNode;
-    private int direction, iter, dir, ufoD;
+    private Node enemyNode, border ,cannonNode, lives;
+    private int direction, iter, dir, numLIves;
     private AudioNode bounce_sound;
     private AudioNode shoot_sound;
     private Float enemySpeed;
-    private BitmapText scoreText;
+    private BitmapText scoreText, highscoreText, livesText;
     private Score gameScore;
 
     public static void main(String[] args){
@@ -44,6 +42,7 @@ public class SpaceInvaders extends SimpleApplication{
         direction = 1;
 
         createText();
+        makeLives();
         gameScore = new Score(0, "AAA");
 
         border = border();
@@ -53,14 +52,14 @@ public class SpaceInvaders extends SimpleApplication{
         cannonNode = makeCannon();
         cannonNode.setLocalTranslation(new Vector3f(0,-5.9f,-9));
 
-        ufoNode = new Node("UFO");
-        makeUFO();
 
         rootNode.attachChild(border);
         rootNode.attachChild(enemyNode);
         rootNode.attachChild(cannonNode);
         rootNode.attachChild(scoreText);
-        rootNode.attachChild(ufoNode);
+        rootNode.attachChild(highscoreText);
+        rootNode.attachChild(livesText);
+        rootNode.attachChild(lives);
 
         iter = 0;//System.currentTimeMillis();
         dir = 0;
@@ -80,16 +79,41 @@ public class SpaceInvaders extends SimpleApplication{
             super.simpleUpdate(tpf);
         }
         iter++;
-        if(ufoNode.getChildren().size() > 0){
-            //moveUFO();
-        }
     }
 
     private void createText(){
         scoreText = new BitmapText(guiFont,false);
         scoreText.setSize(guiFont.getCharSet().getRenderedSize());
         scoreText.setText("Score : 0");
-        scoreText.setLocalTranslation(70, 30,-280);
+        scoreText.setLocalTranslation(70, 97,-280);
+
+        highscoreText = new BitmapText(guiFont,false);
+        highscoreText.setSize(guiFont.getCharSet().getRenderedSize());
+        highscoreText.setText("High Score : 0");
+        highscoreText.setLocalTranslation(-150,97,-280);
+
+        livesText = new BitmapText(guiFont,false);
+        livesText.setSize(guiFont.getCharSet().getRenderedSize());
+        livesText.setText("Lives ");
+        livesText.setLocalScale(.01f);
+        livesText.setLocalTranslation(2,-3.3f,0);
+    }
+
+    public void makeLives()
+    {
+        lives = new Node("lives");
+        for(int i = 0;i<3;i++) {
+            Spatial life = assetManager.loadModel("assets/Models/Cannon/Cannon.j3o");
+            life.setLocalScale(.04f);
+            life.setMaterial(makeColoredMaterial(ColorRGBA.Red));
+            life.setLocalTranslation(.7f*i+3,-3.4f,0);
+            lives.attachChild(life);
+        }
+    }
+
+    public void removeLife()
+    {
+        lives.getChildren().remove(lives.getChildren().size()-1);
     }
 
 
@@ -111,21 +135,6 @@ public class SpaceInvaders extends SimpleApplication{
         cannon.setMaterial(makeColoredMaterial(ColorRGBA.Red));
         node.attachChild(cannon);
         return node;
-    }
-
-    private void makeUFO() {
-        Spatial ufo = assetManager.loadModel("assets/Models/UFO/UFO.j3o");
-        ufo.setLocalScale(.1f);
-        ufo.setMaterial(makeColoredMaterial(ColorRGBA.White));
-        ufoNode.attachChild(ufo);
-        Random random = new Random();
-        switch (random.nextInt(1)){
-            case 0 : ufoD = -1;
-                     break;
-            case 1 : ufoD = 1;
-                     break;
-        }
-        ufoNode.setLocalTranslation(3, 5, -9);
     }
 
     private Node border(){
@@ -216,6 +225,7 @@ public class SpaceInvaders extends SimpleApplication{
             if(name.equals("Shoot") && keyPressed) {
                 shoot_sound.play();
                 gameScore.addScore(50);
+                removeLife();
             }
         }, "Shoot");
     }
