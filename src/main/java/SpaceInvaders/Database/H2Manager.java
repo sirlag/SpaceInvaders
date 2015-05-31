@@ -113,4 +113,15 @@ public enum H2Manager {
         return null;
     }
 
+    /**
+     * Resets the leaderboards, by deleting the table and clearing the memory of the old scores.
+     */
+    public void reset(){
+        try {
+            stat.execute("DROP TABLE SCORES");
+        } catch (SQLException ex){
+            Log.error("Welp... : ", ex);
+        }
+    }
+
 }
