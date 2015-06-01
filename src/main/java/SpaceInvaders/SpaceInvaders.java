@@ -77,6 +77,10 @@ public class SpaceInvaders extends SimpleApplication {
         makeUFO();
     }
 
+    private void menu() {
+
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
@@ -252,19 +256,23 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     public void AttachInputs() {
-        inputManager.addMapping("Move Left", new KeyTrigger(KeyInput.KEY_LEFT));
-        inputManager.addMapping("Move Right", new KeyTrigger(KeyInput.KEY_RIGHT));
+        inputManager.addMapping("Move Left", new KeyTrigger(KeyInput.KEY_LEFT), new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("Move Right", new KeyTrigger(KeyInput.KEY_RIGHT), new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping("Shoot", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener((AnalogListener) (name, keyPressed, tpf) -> {
             if (name.equals("Move Left") && dir != -1)
-                if (movePlayer(-1))
+                if (movePlayer(-1)) {
                     dir = -1;
+                    movePlayer(1);
+                }
                 else
                     dir = 0;
             else if (name.equals("Move Right") && dir != 1)
-                if (movePlayer(1))
+                if (movePlayer(1)) {
                     dir = 1;
+                    movePlayer(-1);
+                }
                 else
                     dir = 0;
         }, "Move Left", "Move Right");
@@ -288,7 +296,7 @@ public class SpaceInvaders extends SimpleApplication {
                         endGame();
                     bounce_sound.play();
                     direction *= -1;
-                    enemyNode.move(0, -.025f, 0);
+                    enemyNode.move(0, -.05f, 0);
                     enemySpeed += .001f;
                 }
             }
