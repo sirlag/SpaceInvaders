@@ -25,11 +25,12 @@ import java.util.Random;
 public class SpaceInvaders extends SimpleApplication {
 
 
-    private Node enemyNode, border ,cannonNode, lives, ufoNode, gameNode, bulletNode;
+    private Node enemyNode, border ,cannonNode, lives, ufoNode, gameNode, bulletNode, leaderNode;
     private int direction, iter, dir, ufoD, highScore;
-    private AudioNode bounce_sound, shoot_sound, ufo_sound;
+    private AudioNode bounce_sound, shoot_sound, ufo_sound, music_sound;
     private Float enemySpeed;
     private BitmapText scoreText, highscoreText, livesText;
+    private BitmapFont myFont;
     private Score gameScore;
     private Boolean ufoExists,game;
 
@@ -85,6 +86,7 @@ public class SpaceInvaders extends SimpleApplication {
         AttachSounds();
 
         menu();
+        createLeaderBoard();
     }
 
     private void menu() {
@@ -103,7 +105,7 @@ public class SpaceInvaders extends SimpleApplication {
         rootNode.attachChild(titleBox);
         rootNode.attachChild(tB);
 
-        BitmapFont myFont = assetManager.loadFont("assets/Fonts/Arcadepix.fnt");
+        myFont = assetManager.loadFont("assets/Fonts/Arcadepix.fnt");
 
         BitmapText Title = new BitmapText(myFont, false);
         BitmapText start = new BitmapText(myFont, false);
@@ -113,7 +115,7 @@ public class SpaceInvaders extends SimpleApplication {
 
         start.setText("Start - Press Enter");
         Title.setText("Space Invaders");
-        leader.setText("Leader Boards - Press Tab");
+        leader.setText("Leader Boards - Press Shift");
         keyText.setText("Movement <- ->       space  shoot");
         keyText2.setText("         A  S");
 
@@ -184,6 +186,30 @@ public class SpaceInvaders extends SimpleApplication {
         rootNode.attachChild(keysNode);
     }
 
+    private void LeaderBoard()
+    {
+        for(Spatial s: rootNode.getChildren()) {
+            if (!s.equals(leaderNode))
+                s.setCullHint(Spatial.CullHint.Always);
+            else
+                s.setCullHint(Spatial.CullHint.Inherit);
+        }
+    }
+
+    public void createLeaderBoard()
+    {
+        leaderNode = new Node("LeaderBoardNodes");
+        BitmapText Title = new BitmapText(myFont,false);
+        Title.setText("Leader Board");
+        Title.setLocalScale(.035f);
+        Title.setLocalTranslation(-5.5f,3,0);
+        guiNode.attachChild(Title);
+        leaderNode.attachChild(Title);
+
+        leaderNode.setCullHint(Spatial.CullHint.Always);
+        rootNode.attachChild(leaderNode);
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
@@ -203,6 +229,7 @@ public class SpaceInvaders extends SimpleApplication {
                 highScore = gameScore.getScore();
                 highscoreText.setText(String.format("High Score : %d - YOU", gameScore.getScore()));
             }
+            music_sound.play();
         }
     }
 
@@ -379,7 +406,7 @@ public class SpaceInvaders extends SimpleApplication {
         inputManager.addMapping("Score Board", new KeyTrigger(KeyInput.KEY_LSHIFT), new KeyTrigger(KeyInput.KEY_RSHIFT));
 
         inputManager.addListener((AnalogListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Move Left") && dir != -1)
+            if (name.equals("Move Left") && dir != -1 && game)
                 if (movePlayer(-1)) {
                     dir = -1;
                     movePlayer(1);
@@ -396,7 +423,7 @@ public class SpaceInvaders extends SimpleApplication {
         }, "Move Left", "Move Right");
 
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
-            if (name.equals("Shoot") && keyPressed) {
+            if (name.equals("Shoot") && keyPressed && game) {
                 playerShoot();
             }
         }, "Shoot");
@@ -407,7 +434,7 @@ public class SpaceInvaders extends SimpleApplication {
             }
             else if(name.equals("Score Board"))
             {
-                startGame();
+                LeaderBoard();
             }
         }, "Start","Score Board");
     }
@@ -481,12 +508,11 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     private void AttachSounds(){
-        AudioNode music_sound = new AudioNode(assetManager, "assets/Sounds/Music/InvadersStage.ogg", false);
+        music_sound = new AudioNode(assetManager, "assets/Sounds/Music/InvadersStage.ogg", false);
         music_sound.setPositional(false);
         music_sound.setLooping(true);
         music_sound.setVolume(3);
         rootNode.attachChild(music_sound);
-        music_sound.play();
 
         bounce_sound = new AudioNode(assetManager, "assets/Sounds/Effects/Bounce.wav", false);
         bounce_sound.setPositional(false);
@@ -510,8 +536,13 @@ public class SpaceInvaders extends SimpleApplication {
 
     private void endGame() {
         System.out.println("Game Over!");
+        for(Spatial s: rootNode.getChildren()) {
+            if(s.equals(gameNode))
+                s.setCullHint(Spatial.CullHint.Always);
+            else
+                s.setCullHint(Spatial.CullHint.Inherit);
+        }
         game = false;
-        menu();
     }
 
     /**
@@ -564,7 +595,7 @@ public class SpaceInvaders extends SimpleApplication {
 
     private void playerShoot(){
         Spatial bullet = Bullet(1, "Invader");
-        bullet.setLocalTranslation(cannonNode.getWorldTranslation().add(0, 1, 0));
+        bullet.setLocalTranslation(cannonNode.getWorldTranslation().add((float)1.35-cannonNode.getWorldTranslation().getX()*.04f, 1, 0));
         bulletNode.attachChild(bullet);
         shoot_sound.play();
     }
