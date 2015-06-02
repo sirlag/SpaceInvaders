@@ -23,7 +23,7 @@ import java.util.Random;
 
 public class SpaceInvaders extends SimpleApplication {
 
-    private Node enemyNode, border ,cannonNode, lives, ufoNode;
+    private Node enemyNode, border ,cannonNode, lives, ufoNode, bulletNode;
     private int direction, iter, dir, ufoD, highScore;
     private AudioNode bounce_sound, shoot_sound, ufo_sound;
     private Float enemySpeed;
@@ -58,9 +58,12 @@ public class SpaceInvaders extends SimpleApplication {
         ufoNode = new Node("UFO");
         ufoExists = false;
 
+        bulletNode = new Node();
+
         rootNode.attachChild(border);
         rootNode.attachChild(enemyNode);
         rootNode.attachChild(cannonNode);
+        rootNode.attachChild(bulletNode);
         rootNode.attachChild(scoreText);
         rootNode.attachChild(ufoNode);
         rootNode.attachChild(highscoreText);
@@ -73,8 +76,6 @@ public class SpaceInvaders extends SimpleApplication {
 
         AttachInputs();
         AttachSounds();
-
-        makeUFO();
     }
 
     private void menu() {
@@ -86,6 +87,7 @@ public class SpaceInvaders extends SimpleApplication {
         //makes the jerking moving motion
         if (iter % 30 == 0)//(System.currentTimeMillis()-iter)%20000==0)
         {
+            moveBullets();
             moveEnemyNode();
             scoreText.setText("Score: " + gameScore.getScore());
             super.simpleUpdate(tpf);
@@ -279,9 +281,7 @@ public class SpaceInvaders extends SimpleApplication {
 
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
             if (name.equals("Shoot") && keyPressed) {
-                shoot_sound.play();
-                gameScore.addScore(50);
-                removeLife();
+                playerShoot();
             }
         }, "Shoot");
     }
@@ -386,5 +386,59 @@ public class SpaceInvaders extends SimpleApplication {
         System.out.println("Game Over!");
     }
 
+    /**
+     * Creates a new Bullet Spatial to be added to a node.
+     * @param direction 1 for firing up (IE PLayer) -1 for firing down (IE Invaders)
+     * @param target The name of the entity you are trying to attack.
+     * @return A new Bullet Spatial
+     */
+    private Spatial Bullet(int direction, String target) {
+        Spatial bullet = assetManager.loadModel("assets/Models/Bullet/Bullet.j3o");
+        bullet.setLocalScale(.15f);
+        bullet.setName("Bullet");
+        bullet.setUserData("Target", target);
+        bullet.setUserData("Direction", direction);
+        bullet.setMaterial(makeColoredMaterial(ColorRGBA.White));
+        return bullet;
+    }
+
+    private void moveBullets(){
+        for(Spatial bullet : bulletNode.getChildren()) {
+            CollisionResults collisionResults = new CollisionResults();
+            bullet.move(0, .05f*(int)bullet.getUserData("Direction"), 0);
+            if(bullet.getUserData("Target").toString().equals("Invader")){
+                for(int i = 0; i < enemyNode.getChildren().size(); i++){
+                    bullet.collideWith(enemyNode.getChild(i).getWorldBound(), collisionResults);
+                    if(collisionResults.size() > 0){
+                        enemyNode.detachChildAt(i);
+                        gameScore.addScore(50);
+                        bulletNode.detachChild(bullet);
+                        break;
+                    }
+                }
+            }
+            else if (bullet.getUserData("Target").equals("Player")){
+                bullet.collideWith(cannonNode.getChild(0), collisionResults);
+                if(collisionResults.size() >= 0){
+                    bulletNode.detachChild(bullet);
+                    removeLife();
+                }
+            }
+            for (Spatial b : border.getChildren()) {
+                bullet.collideWith(b.getWorldBound(), collisionResults);
+                if (collisionResults.size() > 0) {
+                    bulletNode.detachChild(bullet);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void playerShoot(){
+        Spatial bullet = Bullet(1, "Invader");
+        bullet.setLocalTranslation(cannonNode.getWorldTranslation().add(0, 1, 0));
+        bulletNode.attachChild(bullet);
+        shoot_sound.play();
+    }
 
 }
