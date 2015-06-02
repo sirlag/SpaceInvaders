@@ -60,6 +60,8 @@ public class SpaceInvaders extends SimpleApplication {
         ufoNode = new Node("UFO");
         ufoExists = false;
 
+        bulletNode = new Node("Bullets");
+
 
         gameNode = new Node("game nodes");
         gameNode.attachChild(border);
@@ -82,7 +84,6 @@ public class SpaceInvaders extends SimpleApplication {
         AttachInputs();
         AttachSounds();
 
-        makeUFO();
         menu();
     }
 
@@ -108,31 +109,37 @@ public class SpaceInvaders extends SimpleApplication {
         BitmapText start = new BitmapText(myFont, false);
         BitmapText leader = new BitmapText(myFont, false);
         BitmapText keyText = new BitmapText(myFont, false);
+        BitmapText keyText2 = new BitmapText(myFont, false);
 
         start.setText("Start - Press Enter");
         Title.setText("Space Invaders");
         leader.setText("Leader Boards - Press Tab");
         keyText.setText("Movement <- ->       space  shoot");
+        keyText2.setText("         A  S");
 
         Title.setLocalScale(.04f);
         start.setLocalScale(.012f);
         leader.setLocalScale(.012f);
         keyText.setLocalScale(.013f);
+        keyText2.setLocalScale(.013f);
 
         Title.setLocalTranslation(-6.35f,3,0);
         start.setLocalTranslation(-2.0f,1.2f,0);
         leader.setLocalTranslation(-4.3f,.51f,0);
         keyText.setLocalTranslation(-5.465f,-2.51f,0);
+        keyText2.setLocalTranslation(-5.465f,-3.15f, 0);
 
         guiNode.attachChild(Title);
         guiNode.attachChild(start);
         guiNode.attachChild(leader);
         guiNode.attachChild(keyText);
+        guiNode.attachChild(keyText2);
         Node menuTextNode = new Node("text");
         menuTextNode.attachChild(start);
         menuTextNode.attachChild(Title);
         menuTextNode.attachChild(leader);
         menuTextNode.attachChild(keyText);
+        menuTextNode.attachChild(keyText2);
         rootNode.attachChild(menuTextNode);
 
         Node picNode = new Node("menu pics");
@@ -155,17 +162,25 @@ public class SpaceInvaders extends SimpleApplication {
         Geometry keys1 = new Geometry("key",key);
         Geometry keys2 = new Geometry("key",key);
         Geometry keys3 = new Geometry("Space",bar);
+        Geometry keys4 = new Geometry("key", key);
+        Geometry keys5 = new Geometry("key", key);
         keys1.setMaterial(mat);
         keys2.setMaterial(mat);
         keys3.setMaterial(mat);
+        keys4.setMaterial(mat);
+        keys5.setMaterial(mat);
         keys1.setLocalTranslation(-2.8f,-3,-1);
         keys2.setLocalTranslation(-1.9f,-3,-1);
         keys3.setLocalTranslation(1.5f,-3,-1);
+        keys4.setLocalTranslation(-2.8f,-3.75f,-1);
+        keys5.setLocalTranslation(-1.9f, -3.75f, -1);
         Node keysNode = new Node("keys");
 
         keysNode.attachChild(keys1);
         keysNode.attachChild(keys2);
         keysNode.attachChild(keys3);
+        keysNode.attachChild(keys4);
+        keysNode.attachChild(keys5);
         rootNode.attachChild(keysNode);
     }
 
@@ -193,13 +208,12 @@ public class SpaceInvaders extends SimpleApplication {
 
     private void startGame(){
         for(Spatial s: rootNode.getChildren()) {
-            if(s != gameNode)
+            if(!s.equals(gameNode))
                 s.setCullHint(Spatial.CullHint.Always);
-            else if(s == gameNode)
+            else
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
         game = true;
-        ufo_sound.play();
     }
 
     private void createText() {
@@ -496,6 +510,8 @@ public class SpaceInvaders extends SimpleApplication {
 
     private void endGame() {
         System.out.println("Game Over!");
+        game = false;
+        menu();
     }
 
     /**
