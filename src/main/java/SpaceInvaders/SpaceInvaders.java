@@ -221,6 +221,10 @@ public class SpaceInvaders extends SimpleApplication {
                 scoreText.setText("Score: " + gameScore.getScore());
                 super.simpleUpdate(tpf);
             }
+            if((iter+1)%25000 == 0) {
+                makeUFO();
+                ufo_sound.play();
+            }
             iter++;
             if (ufoExists) {
                 moveUFO();
@@ -230,6 +234,7 @@ public class SpaceInvaders extends SimpleApplication {
                 highscoreText.setText(String.format("High Score : %d - YOU", gameScore.getScore()));
             }
             music_sound.play();
+            roundEnded();
         }
     }
 
@@ -432,7 +437,7 @@ public class SpaceInvaders extends SimpleApplication {
             if (name.equals("Start") && keyPressed) {
                 startGame();
             }
-            else if(name.equals("Score Board"))
+            else if(name.equals("Score Board")&&!game)
             {
                 LeaderBoard();
             }
@@ -543,6 +548,26 @@ public class SpaceInvaders extends SimpleApplication {
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
         game = false;
+    }
+
+    private void roundEnded()
+    {
+        if(enemyNode.getChildren().size()==0)
+        {
+            enemySpeed += .05f;
+            reset();
+        }
+    }
+
+    private void reset()
+    {
+        iter = 0;
+        rootNode.detachChild(enemyNode);
+        enemyNode = invaderNode();
+         enemyNode.setLocalTranslation(-6, -1, -9);
+        rootNode.attachChild(enemyNode);
+        cannonNode = makeCannon();
+        bulletNode.detachAllChildren();
     }
 
     /**
