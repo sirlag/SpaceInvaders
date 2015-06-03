@@ -358,11 +358,16 @@ public class SpaceInvaders extends SimpleApplication {
         rightSide.setMaterial(material);
         rightSide.setLocalTranslation(w, 0, 0);
 
+        Geometry pseudoTop = new Geometry("pseudo top", width);
+        pseudoTop.setMaterial(makeColoredMaterial(ColorRGBA.Black));
+        pseudoTop.setLocalTranslation(0,h,-6);
+
         Node borderNode = new Node("Border");
         borderNode.attachChild(top);
         borderNode.attachChild(bottom);
         borderNode.attachChild(leftSide);
         borderNode.attachChild(rightSide);
+        borderNode.attachChild(pseudoTop);
 
         borderNode.getChildren().forEach(com.jme3.scene.Spatial::updateModelBound);
 
@@ -447,6 +452,7 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     public void moveEnemyNode() {
+        boolean col = false;
         for (Spatial spatial : enemyNode.getChildren()) {
             for (Spatial geo : border.getChildren()) {
                 CollisionResults results = new CollisionResults();
@@ -456,10 +462,14 @@ public class SpaceInvaders extends SimpleApplication {
                         endGame();
                     bounce_sound.play();
                     direction *= -1;
-                    enemyNode.move(0, -.05f, 0);
+                    enemyNode.move(.01f*direction, -.05f, 0);
                     enemySpeed += .001f;
+                    col = true;
+                    break;
                 }
             }
+            if(col)
+                break;
             CollisionResults cr = new CollisionResults();
             spatial.collideWith(cannonNode.getChild(0).getWorldBound(), cr);
         }
@@ -549,6 +559,7 @@ public class SpaceInvaders extends SimpleApplication {
             else
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
+        reset();
         game = false;
     }
 
@@ -564,12 +575,17 @@ public class SpaceInvaders extends SimpleApplication {
     private void reset()
     {
         iter = 0;
-        rootNode.detachChild(enemyNode);
+        enemySpeed = .05f;
+        gameNode.detachChild(enemyNode);
         enemyNode = invaderNode();
-         enemyNode.setLocalTranslation(-6, -1, -9);
-        rootNode.attachChild(enemyNode);
-        cannonNode = makeCannon();
+        enemyNode.setLocalTranslation(-6, -1, -9);
+        gameNode.attachChild(enemyNode);
         bulletNode.detachAllChildren();
+        gameNode.detachChild(cannonNode);
+        cannonNode = makeCannon();
+        cannonNode.setLocalTranslation(0, -5.9f, -9);
+        gameNode.attachChild(cannonNode);
+        AttachInputs();
     }
 
     /**
@@ -593,7 +609,7 @@ public class SpaceInvaders extends SimpleApplication {
         for(int i = 0; i < bulletNode.getChildren().size(); i++) {
             Spatial bullet = bulletNode.getChild(i);
             CollisionResults collisionResults = new CollisionResults();
-            bullet.move(0, .1f*(int)bullet.getUserData("Direction"), 0);
+            bullet.move(0, .27f*(int)bullet.getUserData("Direction"), 0);
             if(bullet.getUserData("Target").toString().equals("Invader")){
                 for(int j = 0; i < enemyNode.getChildren().size(); i++){
                     bullet.collideWith(enemyNode.getChild(i).getWorldBound(), collisionResults);
@@ -610,9 +626,9 @@ public class SpaceInvaders extends SimpleApplication {
                     }
                 }
                 //collisionResults.clear();
-                /*bullet.collideWith(ufoNode.getChild().getWorldBound(), collisionResults);
+                /*bullet.collideWith(ufoNode.getChild(1).getWorldBound(), collisionResults);
                 if(collisionResults.size()>col) {
-                    enemyNode.detachChild(ufoNode);
+                    //ufoNode.detachChild();
                     gameScore.addScore(150);
                     bulletNode.detachChild(bullet);
                 }*/
@@ -641,7 +657,7 @@ public class SpaceInvaders extends SimpleApplication {
     private void playerShoot() {
         if (!shot) {
             Spatial bullet = Bullet(1, "Invader");
-            bullet.setLocalTranslation(cannonNode.getWorldTranslation().add(1.35f - cannonNode.getWorldTranslation().getX() * .04f, 1, -1.5f));
+            bullet.setLocalTranslation(cannonNode.getWorldTranslation().add((float)1.35 - cannonNode.getWorldTranslation().getX() * .01f, 1, -1.5f));
             bulletNode.attachChild(bullet);
             shoot_sound.play();
             shot = true;
