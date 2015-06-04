@@ -216,7 +216,7 @@ public class SpaceInvaders extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
         if(game) {
-            if (iter % 30 == 0)//(System.currentTimeMillis()-iter)%20000==0)
+            if (iter % 60 == 0)//(System.currentTimeMillis()-iter)%20000==0)
             {
                 moveBullets();
                 moveEnemyNode();
@@ -225,11 +225,11 @@ public class SpaceInvaders extends SimpleApplication {
             }
             if((iter+1)%25000 == 0) {
                 makeUFO();
-                ufo_sound.play();
             }
             iter++;
             if (ufoExists) {
                 moveUFO();
+                System.out.println(ufoNode.getChild(0).getWorldTranslation());
             }
             if (gameScore.getScore() > highScore) {
                 highScore = gameScore.getScore();
@@ -331,9 +331,9 @@ public class SpaceInvaders extends SimpleApplication {
             case 1 : ufoD = 1;
                      break;
         }
-        ufoNode.setLocalTranslation(0, 5, -9);
+        ufoNode.setLocalTranslation(0, 5, -10.5f);
         ufo.setLocalTranslation(9*(-1*ufoD), 0, 0);
-        //ufo_sound.play();
+        ufo_sound.play();
     }
 
     private Node border() {
@@ -462,7 +462,7 @@ public class SpaceInvaders extends SimpleApplication {
                         endGame();
                     bounce_sound.play();
                     direction *= -1;
-                    enemyNode.move(.01f*direction, -.05f, 0);
+                    enemyNode.move(.01f*direction, -.075f, 0);
                     enemySpeed += .001f;
                     col = true;
                     break;
@@ -605,33 +605,34 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     private void moveBullets(){
-        int col= 0;
         for(int i = 0; i < bulletNode.getChildren().size(); i++) {
             Spatial bullet = bulletNode.getChild(i);
             CollisionResults collisionResults = new CollisionResults();
             bullet.move(0, .27f*(int)bullet.getUserData("Direction"), 0);
             if(bullet.getUserData("Target").toString().equals("Invader")){
-                for(int j = 0; i < enemyNode.getChildren().size(); i++){
-                    bullet.collideWith(enemyNode.getChild(i).getWorldBound(), collisionResults);
+                for(int j = 0; j < enemyNode.getChildren().size(); j++){
+                    bullet.collideWith(enemyNode.getChild(j).getWorldBound(), collisionResults);
                     if(collisionResults.size() > 0){
-                        System.out.println("DANGER ZONEEEEEEEEEEE!!!!");
-                        col++;
-                        enemyNode.detachChildAt(i);
-                        i--;
-                        j--;
+                        enemyNode.detachChildAt(j);
                         gameScore.addScore(50);
-                        bulletNode.detachChild(bullet);
+                        bulletNode.detachChildAt(i);
+                        i--;
                         shot = false;
                         break;
                     }
                 }
-                //collisionResults.clear();
-                /*bullet.collideWith(ufoNode.getChild(1).getWorldBound(), collisionResults);
-                if(collisionResults.size()>col) {
-                    //ufoNode.detachChild();
-                    gameScore.addScore(150);
-                    bulletNode.detachChild(bullet);
-                }*/
+                collisionResults.clear();
+                if(ufoExists) {
+                    bullet.collideWith(ufoNode.getChild(1).getWorldBound(), collisionResults);
+                    if (collisionResults.size() > 0) {
+                        ufoNode.detachChildAt(1);
+                        gameScore.addScore(150);
+                        bulletNode.detachChildAt(i);
+                        shot = false;
+                        ufoExists = false;
+                        ufo_sound.stop();
+                    }
+                }
             }
             else if (bullet.getUserData("Target").equals("Player")){
                 bullet.collideWith(cannonNode.getChild(0), collisionResults);
