@@ -27,13 +27,13 @@ public class SpaceInvaders extends SimpleApplication {
 
 
     private Node enemyNode, border ,cannonNode, lives, ufoNode, gameNode, bulletNode, leaderNode;
-    private int direction, iter, dir, ufoD, highScore;
+    private int direction, iter, dir, ufoD, highScore, enemyShots;
     private AudioNode bounce_sound, shoot_sound, ufo_sound, music_sound;
     private Float enemySpeed;
     private BitmapText scoreText, highscoreText, livesText;
     private BitmapFont myFont;
     private Score gameScore;
-    private Boolean ufoExists,game,shot;
+    private Boolean ufoExists,game,shot, enemyShot;
 
     public static void main(String[] args) {
         SpaceInvaders game = new SpaceInvaders();
@@ -83,6 +83,8 @@ public class SpaceInvaders extends SimpleApplication {
         enemySpeed = .05f;
         game = false;
         shot = false;
+        enemyShot = false;
+        enemyShots = 0;
 
         AttachInputs();
         AttachSounds();
@@ -216,14 +218,14 @@ public class SpaceInvaders extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
         if(game) {
-            if (iter % 60 == 0)//(System.currentTimeMillis()-iter)%20000==0)
+            if (iter % 30 == 0)//(System.currentTimeMillis()-iter)%20000==0)
             {
                 moveBullets();
                 moveEnemyNode();
                 scoreText.setText("Score: " + gameScore.getScore());
                 super.simpleUpdate(tpf);
             }
-            if((iter+1)%25000 == 0) {
+            if((iter+1)%2000 == 0&& !ufoExists) {
                 makeUFO();
             }
             iter++;
@@ -331,7 +333,7 @@ public class SpaceInvaders extends SimpleApplication {
             case 1 : ufoD = 1;
                      break;
         }
-        ufoNode.setLocalTranslation(0, 5, -10.5f);
+        ufoNode.setLocalTranslation(0, 5, -9.5f);
         ufo.setLocalTranslation(9*(-1*ufoD), 0, 0);
         ufo_sound.play();
     }
@@ -515,7 +517,9 @@ public class SpaceInvaders extends SimpleApplication {
             CollisionResults results = new CollisionResults();
             ufoNode.getChild(1).collideWith(geo.getWorldBound(), results);
             if (results.size() > 0) {
+                gameNode.detachChild(ufoNode);
                 ufoNode.getChildren().remove(1);
+                gameNode.attachChild(ufoNode);
                 ufoExists = false;
                 ufo_sound.stop();
                 return;
@@ -585,7 +589,7 @@ public class SpaceInvaders extends SimpleApplication {
         cannonNode = makeCannon();
         cannonNode.setLocalTranslation(0, -5.9f, -9);
         gameNode.attachChild(cannonNode);
-        AttachInputs();
+        //AttachInputs();
     }
 
     /**
@@ -638,6 +642,8 @@ public class SpaceInvaders extends SimpleApplication {
                 bullet.collideWith(cannonNode.getChild(0), collisionResults);
                 if(collisionResults.size() >= 0){
                     bulletNode.detachChild(bullet);
+                    enemyShots--;
+                    enemyShot = true;
                     removeLife();
                 }
             }
@@ -665,4 +671,23 @@ public class SpaceInvaders extends SimpleApplication {
         }
     }
 
+    private void enemyShoot()
+    {
+        int nodes = enemyNode.getChildren().size();
+        int en1 = (int)(Math.random()*nodes-1);
+        Spatial enemy1 = enemyNode.getChildren().get(en1);
+        if(!enemyShot) {
+            Spatial bullet = Bullet(1, "PLayer");
+            bullet.setLocalTranslation(enemy1.getWorldTranslation().add((float) 1.35 - enemy1.getWorldTranslation().getX() * .01f, enemy1.getWorldTranslation().getY() - 1, -1.5f));
+            bulletNode.attachChild(bullet);
+            shoot_sound.play();
+            enemyShots++;
+            if(enemyShots==2)
+            {
+                enemyShots = 0;
+                enemyShot = false;
+            }
+
+        }
+    }
 }
