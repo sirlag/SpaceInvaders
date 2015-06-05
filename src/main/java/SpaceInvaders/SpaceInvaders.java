@@ -228,10 +228,11 @@ public class SpaceInvaders extends SimpleApplication {
             if((iter+1)%2000 == 0&& !ufoExists) {
                 makeUFO();
             }
+            if((iter+1)%700==0)
+                enemyShoot();
             iter++;
             if (ufoExists) {
                 moveUFO();
-                System.out.println(ufoNode.getChild(0).getWorldTranslation());
             }
             if (gameScore.getScore() > highScore) {
                 highScore = gameScore.getScore();
@@ -364,12 +365,17 @@ public class SpaceInvaders extends SimpleApplication {
         pseudoTop.setMaterial(makeColoredMaterial(ColorRGBA.Black));
         pseudoTop.setLocalTranslation(0,h,-6);
 
+        Geometry pseudoBottom = new Geometry("pseudo Bottom", width);
+        pseudoBottom.setMaterial(makeColoredMaterial(ColorRGBA.Black));
+        pseudoBottom.setLocalTranslation(0,-h,-6);
+
         Node borderNode = new Node("Border");
         borderNode.attachChild(top);
         borderNode.attachChild(bottom);
         borderNode.attachChild(leftSide);
         borderNode.attachChild(rightSide);
         borderNode.attachChild(pseudoTop);
+        borderNode.attachChild(pseudoBottom);
 
         borderNode.getChildren().forEach(com.jme3.scene.Spatial::updateModelBound);
 
@@ -556,7 +562,6 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     private void endGame() {
-        System.out.println("Game Over!");
         for(Spatial s: rootNode.getChildren()) {
             if(s.equals(gameNode)||s.equals(leaderNode))
                 s.setCullHint(Spatial.CullHint.Always);
@@ -565,6 +570,8 @@ public class SpaceInvaders extends SimpleApplication {
         }
         reset();
         game = false;
+        music_sound.stop();
+        ufo_sound.stop();
     }
 
     private void roundEnded()
@@ -639,11 +646,12 @@ public class SpaceInvaders extends SimpleApplication {
                 }
             }
             else if (bullet.getUserData("Target").equals("Player")){
-                bullet.collideWith(cannonNode.getChild(0), collisionResults);
-                if(collisionResults.size() >= 0){
+                collisionResults.clear();
+                bullet.collideWith(cannonNode.getChild(0).getWorldBound(), collisionResults);
+                if(collisionResults.size() > 0){
                     bulletNode.detachChild(bullet);
                     enemyShots--;
-                    enemyShot = true;
+                    enemyShot = false;
                     removeLife();
                 }
             }
@@ -653,6 +661,8 @@ public class SpaceInvaders extends SimpleApplication {
                     if (collisionResults.size() > 0) {
                         if(bullet.getUserData("Target").equals("Invader"))
                             shot = false;
+                        else if(bullet.getUserData("Target").equals("Player"))
+                            enemyShot = false;
                         bulletNode.detachChild(bullet);
                         break;
                     }
@@ -674,18 +684,18 @@ public class SpaceInvaders extends SimpleApplication {
     private void enemyShoot()
     {
         int nodes = enemyNode.getChildren().size();
-        int en1 = (int)(Math.random()*nodes-1);
+        int en1 = 11;//(int)(Math.random()*nodes-1);
         Spatial enemy1 = enemyNode.getChildren().get(en1);
         if(!enemyShot) {
-            Spatial bullet = Bullet(1, "PLayer");
-            bullet.setLocalTranslation(enemy1.getWorldTranslation().add((float) 1.35 - enemy1.getWorldTranslation().getX() * .01f, enemy1.getWorldTranslation().getY() - 1, -1.5f));
+            Spatial bullet = Bullet(-1, "Player");
+            bullet.setLocalTranslation(enemy1.getWorldTranslation().add((float) 1.35 - enemy1.getWorldTranslation().getX() * .01f, enemy1.getWorldTranslation().getY() - 1f, -.5f));
             bulletNode.attachChild(bullet);
             shoot_sound.play();
             enemyShots++;
             if(enemyShots==2)
             {
                 enemyShots = 0;
-                enemyShot = false;
+                enemyShot = true;
             }
 
         }
