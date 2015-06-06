@@ -174,20 +174,20 @@ public class SpaceInvaders extends SimpleApplication {
         Box bar = new Box(1f,.3f,.1f);
         mat = makeColoredMaterial(ColorRGBA.DarkGray);
         //uses helper method
-        makeKey(key,mat,-2.8f,-3,-1);
-        makeKey(key,mat,-1.9f,-3,-1);
-        makeKey(bar,mat,1.5f,-3,-1);
-        makeKey(key,mat,-2.8f,-3.75f,-1);
-        makeKey(key,mat,-1.9f, -3.75f, -1);
+        makeKey(key,mat,-2.8f,-3,-1,menuNode);
+        makeKey(key,mat,-1.9f,-3,-1,menuNode);
+        makeKey(bar,mat,1.5f,-3,-1,menuNode);
+        makeKey(key,mat,-2.8f,-3.75f,-1,menuNode);
+        makeKey(key,mat,-1.9f, -3.75f, -1,menuNode);
         rootNode.attachChild(menuNode);
     }
     //helper method to make keys in menu
-    private void makeKey(Box b, Material mat, float x, float y, float z)
+    private void makeKey(Box b, Material mat, float x, float y, float z, Node node)
     {
         Geometry key = new Geometry("key", b);
         key.setMaterial(mat);
         key.setLocalTranslation(x,y,z);
-        menuNode.attachChild(key);
+        node.attachChild(key);
     }
 
     /*helper metho to move between menu guide*/
@@ -210,9 +210,20 @@ public class SpaceInvaders extends SimpleApplication {
         BitmapText Title = new BitmapText(myFont,false);
         Title.setText("Leader Board");
         Title.setLocalScale(.035f);
-        Title.setLocalTranslation(-5.5f,3,0);
+        Title.setLocalTranslation(-5.5f,2.8f,0);
+        BitmapText backSpace = new BitmapText(myFont, false);
+        backSpace.setText("To menu   backspace");
+        backSpace.setLocalScale(.0068f);
+        backSpace.setLocalTranslation(2.62f,2.8f,1);
+
+        guiNode.attachChild(backSpace);
         guiNode.attachChild(Title);
+
+        leaderNode.attachChild(backSpace);
         leaderNode.attachChild(Title);
+
+        Box space = new Box(.8f,.3f,.1f);
+        makeKey(space,makeColoredMaterial(ColorRGBA.DarkGray),5.5f,3,0,leaderNode);
 
         leaderNode.setCullHint(Spatial.CullHint.Always);
         rootNode.attachChild(leaderNode);
@@ -480,7 +491,7 @@ public class SpaceInvaders extends SimpleApplication {
                         endGame();
                     bounce_sound.play();
                     direction *= -1;
-                    enemyNode.move(.01f*direction, -.125f, 0);
+                    enemyNode.move(.01f*direction, -.3f, 0);
                     enemySpeed += .001f;
                     col = true;
                     break;
