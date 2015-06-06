@@ -27,13 +27,13 @@ public class SpaceInvaders extends SimpleApplication {
 
 
     private Node enemyNode, border ,cannonNode, lives, ufoNode, gameNode, bulletNode, leaderNode, menuNode;
-    private int direction, iter, dir, ufoD, highScore, enemyShots, gameRound;
+    private int direction, iter, dir, ufoD, highScore, enemyShots, gameRound, flickerNum;
     private AudioNode bounce_sound, shoot_sound, ufo_sound, music_sound;
     private Float enemySpeed;
     private BitmapText scoreText, highscoreText, livesText;
     private BitmapFont myFont;
     private Score gameScore;
-    private Boolean ufoExists,game,shot, enemyShot;
+    private Boolean ufoExists,game,shot, enemyShot, flicker;
 
     public static void main(String[] args) {
         SpaceInvaders game = new SpaceInvaders();
@@ -86,6 +86,8 @@ public class SpaceInvaders extends SimpleApplication {
         enemyShot = false;
         enemyShots = 0;
         gameRound = 1;
+        flicker = false;
+        flickerNum = 0;
 
         AttachInputs();
         AttachSounds();
@@ -171,40 +173,35 @@ public class SpaceInvaders extends SimpleApplication {
         Box key = new Box(.3f,.3f,.1f);
         Box bar = new Box(1f,.3f,.1f);
         mat = makeColoredMaterial(ColorRGBA.DarkGray);
-        Geometry keys1 = new Geometry("key",key);
-        Geometry keys2 = new Geometry("key",key);
-        Geometry keys3 = new Geometry("Space",bar);
-        Geometry keys4 = new Geometry("key", key);
-        Geometry keys5 = new Geometry("key", key);
-        keys1.setMaterial(mat);
-        keys2.setMaterial(mat);
-        keys3.setMaterial(mat);
-        keys4.setMaterial(mat);
-        keys5.setMaterial(mat);
-        keys1.setLocalTranslation(-2.8f,-3,-1);
-        keys2.setLocalTranslation(-1.9f,-3,-1);
-        keys3.setLocalTranslation(1.5f,-3,-1);
-        keys4.setLocalTranslation(-2.8f,-3.75f,-1);
-        keys5.setLocalTranslation(-1.9f, -3.75f, -1);
-        Node keysNode = new Node("keys");
-
-        keysNode.attachChild(keys1);
-        keysNode.attachChild(keys2);
-        keysNode.attachChild(keys3);
-        keysNode.attachChild(keys4);
-        keysNode.attachChild(keys5);
-        menuNode.attachChild(keysNode);
+        //uses helper method
+        makeKey(key,mat,-2.8f,-3,-1);
+        makeKey(key,mat,-1.9f,-3,-1);
+        makeKey(bar,mat,1.5f,-3,-1);
+        makeKey(key,mat,-2.8f,-3.75f,-1);
+        makeKey(key,mat,-1.9f, -3.75f, -1);
         rootNode.attachChild(menuNode);
     }
+    //helper method to make keys in menu
+    private void makeKey(Box b, Material mat, float x, float y, float z)
+    {
+        Geometry key = new Geometry("key", b);
+        key.setMaterial(mat);
+        key.setLocalTranslation(x,y,z);
+        menuNode.attachChild(key);
+    }
 
-    private void LeaderBoard()
+    /*helper metho to move between menu guide*/
+    private void goTo(Node node)
     {
         for(Spatial s: rootNode.getChildren()) {
-            if (!s.equals(leaderNode))
+            if (!s.equals(node))
                 s.setCullHint(Spatial.CullHint.Always);
             else
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
+        game = node.getName().equals("game nodes");
+        if(!game)
+            reset();
     }
 
     public void createLeaderBoard()
@@ -245,31 +242,20 @@ public class SpaceInvaders extends SimpleApplication {
                 highScore = gameScore.getScore();
                 highscoreText.setText(String.format("High Score : %d - YOU", gameScore.getScore()));
             }
+            if(flicker && iter%40==0 && flickerNum<5) {
+                cannonNode.setCullHint(Spatial.CullHint.Always);
+            }
+            if(flicker && (iter+20)%40==0) {
+                cannonNode.setCullHint(Spatial.CullHint.Inherit);
+                if(flickerNum == 4)
+                    flicker = false;
+                flickerNum++;
+            }
             music_sound.play();
             roundEnded();
         }
     }
 
-    private void startGame(){
-        for(Spatial s: rootNode.getChildren()) {
-            if(!s.equals(gameNode))
-                s.setCullHint(Spatial.CullHint.Always);
-            else
-                s.setCullHint(Spatial.CullHint.Inherit);
-        }
-        game = true;
-    }
-
-    private void startMenu()
-    {
-        for(Spatial s: rootNode.getChildren()) {
-            if(!s.equals(menuNode))
-                s.setCullHint(Spatial.CullHint.Always);
-            else
-                s.setCullHint(Spatial.CullHint.Inherit);
-        }
-        game = false;
-    }
 
     private void createText() {
         scoreText = new BitmapText(guiFont, false);
@@ -314,12 +300,12 @@ public class SpaceInvaders extends SimpleApplication {
     {
         if(lives.getChildren().size() > 0) {
             lives.getChildren().remove(lives.getChildren().size() - 1);
-
+            flicker = true;
+            flickerNum = 0;
         }
         else
             endGame();
     }
-
 
     private Spatial makeInvader(ColorRGBA color, Vector3f offsetVector) {
         Spatial invader = assetManager.loadModel("assets/Models/Invader/Invader.j3o");
@@ -471,14 +457,14 @@ public class SpaceInvaders extends SimpleApplication {
 
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
             if (name.equals("Start") && keyPressed) {
-                startGame();
+                goTo(gameNode);
             }
             else if(name.equals("Score Board")&&!game)
             {
-                LeaderBoard();
+                goTo(leaderNode);
             }
             else if(name.equals("Menu"))
-                startMenu();
+                goTo(menuNode);
 
         }, "Start","Score Board", "Menu");
     }
@@ -626,7 +612,10 @@ public class SpaceInvaders extends SimpleApplication {
         cannonNode = makeCannon();
         cannonNode.setLocalTranslation(0, -5.9f, -9);
         gameNode.attachChild(cannonNode);
-        //AttachInputs();
+        music_sound.stop();
+        gameNode.detachChild(lives);
+        makeLives();
+        gameNode.attachChild(lives);
     }
 
     /**
