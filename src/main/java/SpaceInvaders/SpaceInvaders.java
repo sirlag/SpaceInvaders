@@ -29,7 +29,7 @@ public class SpaceInvaders extends SimpleApplication {
     private int direction, iter, dir, ufoD, highScore, enemyShots, gameRound, flickerNum;
     private AudioNode bounce_sound, shoot_sound, ufo_sound, music_sound;
     private Float enemySpeed;
-    private BitmapText scoreText, highscoreText, livesText;
+    private BitmapText scoreText, highscoreText, livesText, roundText;
     private BitmapFont myFont;
     private Score gameScore;
     private Boolean ufoExists,game,shot, enemyShot, flicker, muted;
@@ -93,6 +93,8 @@ public class SpaceInvaders extends SimpleApplication {
 
         menu();
         createLeaderBoard();
+
+        roundText = new BitmapText(myFont,false);
     }
 
     private void menu() {
@@ -184,7 +186,8 @@ public class SpaceInvaders extends SimpleApplication {
     public void setupMuteImage(){
         muteImage = new Picture("Mute Picture");
         muteImage.setImage(assetManager,"assets/Interface/icons/mute.png", true);
-        muteImage.setPosition(settings.getWidth(), settings.getHeight());
+        muteImage.setLocalTranslation(0,0,0);
+        muteImage.setLocalScale(.1f);
     }
 
     //helper method to make keys in menu
@@ -461,35 +464,30 @@ public class SpaceInvaders extends SimpleApplication {
                 if (movePlayer(-1)) {
                     dir = -1;
                     movePlayer(1);
-                }
-                else
+                } else
                     dir = 0;
             else if (name.equals("Move Right") && dir != 1)
                 if (movePlayer(1)) {
                     dir = 1;
                     movePlayer(-1);
-                }
-                else
+                } else
                     dir = 0;
         }, "Move Left", "Move Right");
 
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
             if (name.equals("Shoot") && keyPressed && game) {
                 playerShoot();
-            }
-            else if (name.equals("Start") && keyPressed) {
+            } else if (name.equals("Start") && keyPressed) {
                 goTo(gameNode);
-            }
-            else if(name.equals("Score Board")&&!game)
-            {
+                gameRound = 0;
+            } else if (name.equals("Score Board") && !game) {
                 goTo(leaderNode);
-            }
-            else if(name.equals("Menu"))
+            } else if (name.equals("Menu"))
                 goTo(menuNode);
-            else if(name.equals("Mute") && keyPressed)
+            else if (name.equals("Mute") && keyPressed)
                 muteSound();
 
-        }, "Shoot","Start","Score Board", "Menu", "Mute");
+        }, "Shoot", "Start", "Score Board", "Menu", "Mute");
 
     }
 
@@ -624,8 +622,9 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     private void reset() {
-        resetBools();
-        resetValues();
+        roundText.setText("Round " + gameRound);
+        roundText.setLocalScale(.1f);
+        rootNode.attachChild(roundText);
         gameNode.detachChild(enemyNode);
         enemyNode = invaderNode();
         enemyNode.setLocalTranslation(-6, -1, -9);
@@ -638,6 +637,12 @@ public class SpaceInvaders extends SimpleApplication {
         music_sound.stop();
         gameNode.detachChild(lives);
         gameNode.attachChild(lives);
+        gameNode.detachChild(ufoNode);
+        if(ufoExists)
+            ufoNode.detachChildAt(1);
+        gameNode.attachChild(ufoNode);
+        resetBools();
+        resetValues();
     }
 
     private void resetValues() {
@@ -761,6 +766,7 @@ public class SpaceInvaders extends SimpleApplication {
             music_sound.setVolume(0);
             muted = true;
             guiNode.attachChild(muteImage);
+            rootNode.attachChild(muteImage);
         }
         else{
             music_sound.setVolume(3);
@@ -769,6 +775,7 @@ public class SpaceInvaders extends SimpleApplication {
             ufo_sound.setVolume(.5f);
             muted = false;
             guiNode.detachChild(muteImage);
+            rootNode.detachChild(muteImage);
         }
     }
 }
