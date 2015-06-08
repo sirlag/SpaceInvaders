@@ -209,7 +209,7 @@ public class SpaceInvaders extends SimpleApplication {
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
         game = node.getName().equals("game nodes");
-        if(!game)
+        if(game)
             reset();
     }
 
@@ -271,6 +271,8 @@ public class SpaceInvaders extends SimpleApplication {
                     flicker = false;
                 flickerNum++;
             }
+            if(iter>300&&roundText.getText().contains("R"))
+                roundText.setText("");
             music_sound.play();
             roundEnded();
         }
@@ -477,14 +479,20 @@ public class SpaceInvaders extends SimpleApplication {
         inputManager.addListener((ActionListener) (name, keyPressed, tpf) -> {
             if (name.equals("Shoot") && keyPressed && game) {
                 playerShoot();
-            } else if (name.equals("Start") && keyPressed) {
+            } else if (name.equals("Start") && keyPressed && !roundText.getText().contains("G")) {
                 goTo(gameNode);
-                gameRound = 0;
+                gameRound = 1;
+                roundText.setText("Round 1");
+                roundText.setLocalScale(.04f);
+                roundText.setLocalTranslation(-2.7f,2,0);
+                rootNode.attachChild(roundText);
             } else if (name.equals("Score Board") && !game) {
                 goTo(leaderNode);
-            } else if (name.equals("Menu"))
+            } else if (name.equals("Menu")) {
+                if (roundText.getText().contains("G"))
+                    endGame();
                 goTo(menuNode);
-            else if (name.equals("Mute") && keyPressed)
+            }else if (name.equals("Mute") && keyPressed)
                 muteSound();
 
         }, "Shoot", "Start", "Score Board", "Menu", "Mute");
@@ -593,8 +601,14 @@ public class SpaceInvaders extends SimpleApplication {
         ufoNode.attachChild(ufo_sound);
     }
 
-    private void endGame() {
+    private void gameOver()
+    {
+        roundText.setText("Game Over");
+        game = false;
+    }
 
+    private void endGame() {
+        roundText.setText("");
         for(Spatial s: rootNode.getChildren()) {
             if(s.equals(gameNode)||s.equals(leaderNode))
                 s.setCullHint(Spatial.CullHint.Always);
@@ -604,8 +618,8 @@ public class SpaceInvaders extends SimpleApplication {
         if (gameScore.getScore() >= highScore) {
             H2Manager.INSTANCE.addScore(gameScore);
         }
+        gameScore.addScore(-gameScore.getScore());
         reset();
-        game = false;
         music_sound.stop();
         ufo_sound.stop();
 
@@ -616,15 +630,14 @@ public class SpaceInvaders extends SimpleApplication {
         if(enemyNode.getChildren().size()==0)
         {
             lives.attachChild(Life(lives.getChildren().size()));
-            reset();
             gameRound++;
+            reset();
         }
     }
 
     private void reset() {
-        roundText.setText("Round " + gameRound);
-        roundText.setLocalScale(.1f);
-        rootNode.attachChild(roundText);
+        if(game)
+            roundText.setText("Round " + gameRound);
         gameNode.detachChild(enemyNode);
         enemyNode = invaderNode();
         enemyNode.setLocalTranslation(-6, -1, -9);
@@ -638,8 +651,10 @@ public class SpaceInvaders extends SimpleApplication {
         gameNode.detachChild(lives);
         gameNode.attachChild(lives);
         gameNode.detachChild(ufoNode);
-        if(ufoExists)
+        if(ufoExists) {
             ufoNode.detachChildAt(1);
+            ufo_sound.stop();
+        }
         gameNode.attachChild(ufoNode);
         resetBools();
         resetValues();
@@ -647,7 +662,7 @@ public class SpaceInvaders extends SimpleApplication {
 
     private void resetValues() {
         iter = 0;
-        enemySpeed = .04f + .002f*gameRound;
+        enemySpeed = .04f + .01f*gameRound;
     }
 
     private void resetBools() {
@@ -686,6 +701,8 @@ public class SpaceInvaders extends SimpleApplication {
                         enemyNode.detachChildAt(j);
                         gameScore.addScore(50);
                         bulletNode.detachChildAt(i);
+                        //gameOver();
+                        //endGame();
                         i--;
                         shot = false;
                         break;
