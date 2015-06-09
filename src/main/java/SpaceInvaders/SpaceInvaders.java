@@ -25,14 +25,14 @@ import java.util.Random;
 
 public class SpaceInvaders extends SimpleApplication {
 
-    private Node enemyNode, border ,cannonNode, lives, ufoNode, gameNode, bulletNode, leaderNode, menuNode;
+    private Node enemyNode, border, cannonNode, lives, ufoNode, gameNode, bulletNode, leaderNode, menuNode;
     private int direction, iter, dir, ufoD, highScore, enemyShots, gameRound, flickerNum;
     private AudioNode bounce_sound, shoot_sound, ufo_sound, music_sound;
     private Float enemySpeed;
     private BitmapText scoreText, highscoreText, livesText, roundText;
     private BitmapFont myFont;
     private Score gameScore;
-    private Boolean ufoExists,game,shot, enemyShot, flicker, muted;
+    private Boolean ufoExists, game, shot, enemyShot, flicker, muted;
     private Picture muteImage;
 
     public static void main(String[] args) {
@@ -94,14 +94,14 @@ public class SpaceInvaders extends SimpleApplication {
         menu();
         createLeaderBoard();
 
-        roundText = new BitmapText(myFont,false);
+        roundText = new BitmapText(myFont, false);
     }
 
     private void menu() {
         menuNode = new Node("Menu");
-        Box TitleBox = new Box(11.5f,1.15f,0.1f);
+        Box TitleBox = new Box(11.5f, 1.15f, 0.1f);
         Material mat = makeColoredMaterial(ColorRGBA.White);
-        Geometry titleBox = new Geometry("back",TitleBox);
+        Geometry titleBox = new Geometry("back", TitleBox);
         titleBox.setMaterial(mat);
         //titleBox.setLocalScale(.9f);
         titleBox.setLocalTranslation(0, 3.3f, -4);
@@ -157,10 +157,10 @@ public class SpaceInvaders extends SimpleApplication {
         //rootNode.attachChild(menuTextNode);
 
         Node picNode = new Node("menu pics");
-        picNode.attachChild(makeInvader(ColorRGBA.White, new Vector3f(-3,-1.5f,0)).rotate(0,.1f,0));
+        picNode.attachChild(makeInvader(ColorRGBA.White, new Vector3f(-3, -1.5f, 0)).rotate(0, .1f, 0));
         Node cN = new Node("CannonNode");
         cN.attachChild(makeCannon());
-        cN.setLocalTranslation(0, -1.5f,0);
+        cN.setLocalTranslation(0, -1.5f, 0);
         picNode.attachChild(cN);
         Spatial ufo = assetManager.loadModel("assets/Models/UFO/UFO.j3o");
         ufo.setLocalScale(.1f);
@@ -171,8 +171,8 @@ public class SpaceInvaders extends SimpleApplication {
         menuNode.attachChild(picNode);
         //rootNode.attachChild(picNode);
 
-        Box key = new Box(.3f,.3f,.1f);
-        Box bar = new Box(1f,.3f,.1f);
+        Box key = new Box(.3f, .3f, .1f);
+        Box bar = new Box(1f, .3f, .1f);
         mat = makeColoredMaterial(ColorRGBA.DarkGray);
         //uses helper method
         makeKey(key, mat, -2.8f, -3, -1, menuNode);
@@ -183,47 +183,44 @@ public class SpaceInvaders extends SimpleApplication {
         rootNode.attachChild(menuNode);
     }
 
-    public void setupMuteImage(){
+    public void setupMuteImage() {
         muteImage = new Picture("Mute Picture");
-        muteImage.setImage(assetManager,"assets/Interface/icons/mute.png", true);
-        muteImage.setLocalTranslation(0,0,0);
+        muteImage.setImage(assetManager, "assets/Interface/icons/mute.png", true);
+        muteImage.setLocalTranslation(0, 0, 0);
         muteImage.setLocalScale(.1f);
     }
 
     //helper method to make keys in menu
-    private void makeKey(Box b, Material mat, float x, float y, float z, Node node)
-    {
+    private void makeKey(Box b, Material mat, float x, float y, float z, Node node) {
         Geometry key = new Geometry("key", b);
         key.setMaterial(mat);
-        key.setLocalTranslation(x,y,z);
+        key.setLocalTranslation(x, y, z);
         node.attachChild(key);
     }
 
     /*helper method to move between menu guide*/
-    private void goTo(Node node)
-    {
-        for(Spatial s: rootNode.getChildren()) {
+    private void goTo(Node node) {
+        for (Spatial s : rootNode.getChildren()) {
             if (!s.equals(node))
                 s.setCullHint(Spatial.CullHint.Always);
             else
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
         game = node.getName().equals("game nodes");
-        if(game)
+        if (game)
             reset();
     }
 
-    public void createLeaderBoard()
-    {
+    public void createLeaderBoard() {
         leaderNode = new Node("LeaderBoardNodes");
-        BitmapText Title = new BitmapText(myFont,false);
+        BitmapText Title = new BitmapText(myFont, false);
         Title.setText("Leader Board");
         Title.setLocalScale(.035f);
-        Title.setLocalTranslation(-5.5f,2.8f,0);
+        Title.setLocalTranslation(-5.5f, 2.8f, 0);
         BitmapText backSpace = new BitmapText(myFont, false);
         backSpace.setText("To menu   backspace");
         backSpace.setLocalScale(.0068f);
-        backSpace.setLocalTranslation(2.62f,2.8f,1);
+        backSpace.setLocalTranslation(2.62f, 2.8f, 1);
 
         guiNode.attachChild(backSpace);
         guiNode.attachChild(Title);
@@ -231,8 +228,8 @@ public class SpaceInvaders extends SimpleApplication {
         leaderNode.attachChild(backSpace);
         leaderNode.attachChild(Title);
 
-        Box space = new Box(.8f,.3f,.1f);
-        makeKey(space,makeColoredMaterial(ColorRGBA.DarkGray),5.5f,3,0,leaderNode);
+        Box space = new Box(.8f, .3f, .1f);
+        makeKey(space, makeColoredMaterial(ColorRGBA.DarkGray), 5.5f, 3, 0, leaderNode);
 
         leaderNode.setCullHint(Spatial.CullHint.Always);
         rootNode.attachChild(leaderNode);
@@ -241,7 +238,7 @@ public class SpaceInvaders extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         //makes the jerking moving motion
-        if(game) {
+        if (game) {
             if (iter % 30 == 0)//(System.currentTimeMillis()-iter)%20000==0)
             {
                 moveBullets();
@@ -249,10 +246,10 @@ public class SpaceInvaders extends SimpleApplication {
                 scoreText.setText("Score: " + gameScore.getScore());
                 super.simpleUpdate(tpf);
             }
-            if((iter+1)%6000 == 0&& !ufoExists) {
+            if ((iter + 1) % 6000 == 0 && !ufoExists) {
                 makeUFO();
             }
-            if((iter+1)%(650-2*gameRound)==0)
+            if ((iter + 1) % (450 - 2 * gameRound) == 0)
                 enemyShoot();
             iter++;
             if (ufoExists) {
@@ -262,16 +259,16 @@ public class SpaceInvaders extends SimpleApplication {
                 highScore = gameScore.getScore();
                 highscoreText.setText(String.format("High Score : %d - YOU", gameScore.getScore()));
             }
-            if(flicker && iter%40==0 && flickerNum<5) {
+            if (flicker && iter % 40 == 0 && flickerNum < 5) {
                 cannonNode.setCullHint(Spatial.CullHint.Always);
             }
-            if(flicker && (iter+20)%40==0) {
+            if (flicker && (iter + 20) % 40 == 0) {
                 cannonNode.setCullHint(Spatial.CullHint.Inherit);
-                if(flickerNum == 4)
+                if (flickerNum == 4)
                     flicker = false;
                 flickerNum++;
             }
-            if(iter>300&&roundText.getText().contains("R"))
+            if (iter > 300 && roundText.getText().contains("R"))
                 roundText.setText("");
             music_sound.play();
             roundEnded();
@@ -289,16 +286,15 @@ public class SpaceInvaders extends SimpleApplication {
         highscoreText = new BitmapText(guiFont, false);
         highscoreText.setSize(guiFont.getCharSet().getRenderedSize());
         Optional<Score> score = H2Manager.INSTANCE.getHighScore();
-        if(score != null && score.isPresent()) {
+        if (score != null && score.isPresent()) {
             highscoreText.setText(String.format("High Score : %d - %s", score.get().getScore(), score.get().getInitials()));
             highScore = score.get().getScore();
-        }
-        else {
+        } else {
             highscoreText.setText("High Score : 0");
             highScore = 0;
         }
         highscoreText.setLocalScale(.02f);
-        highscoreText.setLocalTranslation(-5,3.5f,0);
+        highscoreText.setLocalTranslation(-5, 3.5f, 0);
 
         livesText = new BitmapText(guiFont, false);
         livesText.setSize(guiFont.getCharSet().getRenderedSize());
@@ -315,7 +311,7 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
 
-    private Spatial Life(int i){
+    private Spatial Life(int i) {
         Spatial life = assetManager.loadModel("assets/Models/Cannon/Cannon.j3o");
         life.setLocalScale(.04f);
         life.setMaterial(makeColoredMaterial(ColorRGBA.Red));
@@ -324,15 +320,13 @@ public class SpaceInvaders extends SimpleApplication {
         return life;
     }
 
-    public void removeLife()
-    {
-        if(lives.getChildren().size() > 0) {
+    public void removeLife() {
+        if (lives.getChildren().size() > 0) {
             lives.getChildren().remove(lives.getChildren().size() - 1);
             flicker = true;
             flickerNum = 0;
-        }
-        else
-            endGame();
+        } else
+            gameOver();
     }
 
     private Spatial makeInvader(ColorRGBA color, Vector3f offsetVector) {
@@ -362,14 +356,16 @@ public class SpaceInvaders extends SimpleApplication {
         ufo.setMaterial(makeColoredMaterial(ColorRGBA.White));
         ufoNode.attachChild(ufo);
         Random random = new Random();
-        switch (random.nextInt(2)){
-            case 0 : ufoD = -1;
-                     break;
-            case 1 : ufoD = 1;
-                     break;
+        switch (random.nextInt(2)) {
+            case 0:
+                ufoD = -1;
+                break;
+            case 1:
+                ufoD = 1;
+                break;
         }
         ufoNode.setLocalTranslation(0, 5, -9.5f);
-        ufo.setLocalTranslation(9*(-1*ufoD), 0, 0);
+        ufo.setLocalTranslation(9 * (-1 * ufoD), 0, 0);
         ufo_sound.play();
     }
 
@@ -397,11 +393,11 @@ public class SpaceInvaders extends SimpleApplication {
 
         Geometry pseudoTop = new Geometry("pseudo top", width);
         pseudoTop.setMaterial(makeColoredMaterial(ColorRGBA.Black));
-        pseudoTop.setLocalTranslation(0,h+1,-6);
+        pseudoTop.setLocalTranslation(0, h + 1, -6);
 
         Geometry pseudoBottom = new Geometry("pseudo Bottom", width);
         pseudoBottom.setMaterial(makeColoredMaterial(ColorRGBA.Black));
-        pseudoBottom.setLocalTranslation(0,-h,-6);
+        pseudoBottom.setLocalTranslation(0, -h, -6);
 
         Node borderNode = new Node("Border");
         borderNode.attachChild(top);
@@ -460,6 +456,7 @@ public class SpaceInvaders extends SimpleApplication {
         inputManager.addMapping("Score Board", new KeyTrigger(KeyInput.KEY_LSHIFT), new KeyTrigger(KeyInput.KEY_RSHIFT));
         inputManager.addMapping("Menu", new KeyTrigger((KeyInput.KEY_BACK)));
         inputManager.addMapping("Mute", new KeyTrigger(KeyInput.KEY_M));
+        inputManager.addMapping("Pause", new KeyTrigger((KeyInput.KEY_P)));
 
         inputManager.addListener((AnalogListener) (name, keyPressed, tpf) -> {
             if (name.equals("Move Left") && dir != -1 && game)
@@ -484,19 +481,27 @@ public class SpaceInvaders extends SimpleApplication {
                 gameRound = 1;
                 roundText.setText("Round 1");
                 roundText.setLocalScale(.04f);
-                roundText.setLocalTranslation(-2.7f,2,0);
+                roundText.setLocalTranslation(-2.7f, 2, 0);
                 rootNode.attachChild(roundText);
             } else if (name.equals("Score Board") && !game) {
                 goTo(leaderNode);
             } else if (name.equals("Menu")) {
-                if (roundText.getText().contains("G"))
-                    endGame();
+                //if (roundText.getText().contains("G")||roundText.getText().contains("R")))
+                endGame();
                 goTo(menuNode);
-            }else if (name.equals("Mute") && keyPressed)
+            } else if (name.equals("Mute") && keyPressed)
                 muteSound();
+            else if ((name.equals("Pause"))&&keyPressed)
+                pause();
 
-        }, "Shoot", "Start", "Score Board", "Menu", "Mute");
+        }, "Shoot", "Start", "Score Board", "Menu", "Mute","Pause");
 
+    }
+
+    private void pause()
+    {
+        game = !game;
+        muteSound();
     }
 
     public void moveEnemyNode() {
@@ -604,7 +609,7 @@ public class SpaceInvaders extends SimpleApplication {
     private void gameOver()
     {
         roundText.setText("Game Over");
-        game = false;
+        pause();
     }
 
     private void endGame() {
@@ -636,8 +641,10 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     private void reset() {
+        rootNode.detachChild(roundText);
         if(game)
             roundText.setText("Round " + gameRound);
+        rootNode.attachChild(roundText);
         gameNode.detachChild(enemyNode);
         enemyNode = invaderNode();
         enemyNode.setLocalTranslation(-6, -1, -9);
@@ -662,7 +669,7 @@ public class SpaceInvaders extends SimpleApplication {
 
     private void resetValues() {
         iter = 0;
-        enemySpeed = .04f + .01f*gameRound;
+        enemySpeed = .05f + .025f*gameRound;
     }
 
     private void resetBools() {
@@ -749,8 +756,8 @@ public class SpaceInvaders extends SimpleApplication {
 
     private void playerShoot() {
         if (!shot) {
-            Spatial bullet = Bullet(1, "Invader");
-            bullet.setLocalTranslation(cannonNode.getWorldTranslation().add((float)1.35 - cannonNode.getWorldTranslation().getX() * .01f, 1, -1.5f));
+            Spatial bullet = Bullet(2, "Invader");
+            bullet.setLocalTranslation(cannonNode.getWorldTranslation().add((float)1.350 + cannonNode.getWorldTranslation().getX() * .03f, 1, -1.5f));
             bulletNode.attachChild(bullet);
             shoot_sound.play();
             shot = true;
@@ -763,7 +770,7 @@ public class SpaceInvaders extends SimpleApplication {
         Spatial enemy1 = enemyNode.getChildren().get(en1);
         if(!enemyShot) {
             Spatial bullet = Bullet(-1, "Player");
-            bullet.setLocalTranslation(enemy1.getWorldTranslation().add((float) 1.35 - enemy1.getWorldTranslation().getX() * .01f,  -1f, -.5f));
+            bullet.setLocalTranslation(enemy1.getWorldTranslation().add((float) 1.35 + enemy1.getWorldTranslation().getX() * .03f,  -1f, -.5f));
             bulletNode.attachChild(bullet);
             shoot_sound.play();
             enemyShots++;
