@@ -203,7 +203,7 @@ public class SpaceInvaders extends SimpleApplication {
         for(Score s : H2Manager.INSTANCE.getScores()) {
             if (i > 10)
                 break;
-            makeText(myFont, s.toString(), .035f, -6.5f+(-.1f*i), 2.8f, 0, leaderNode);
+            makeText(myFont, i+1 + " " + s.toString(), .015f, -5+(-.1f*i), .4f*2.8f*i -1, 0, leaderNode);
             i++;
         }
 
