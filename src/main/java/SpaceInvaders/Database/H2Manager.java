@@ -80,7 +80,7 @@ public enum H2Manager {
         ArrayList<Score> scores = new ArrayList<>();
 
         try {
-            rs = stat.executeQuery("SELECT * FROM Scores");
+            rs = stat.executeQuery("SELECT * FROM Scores ORDER BY score DESC");
 
             while (rs.next()) {
                 Score temp = new Score(rs.getInt(1), rs.getString(2));

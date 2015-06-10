@@ -203,7 +203,7 @@ public class SpaceInvaders extends SimpleApplication {
         for(Score s : H2Manager.INSTANCE.getScores()) {
             if (i > 10)
                 break;
-            makeText(myFont, i+1 + " " + s.toString(), .015f, -5+(-.1f*i), .4f*2.8f*i -1, 0, leaderNode);
+            makeText(myFont, i+1 + " " + s.toString(), .015f, -5+(-.1f) + (i/5*6.5f), -1f*((i)%5-1) +.5f, 0, leaderNode);
             i++;
         }
 
@@ -437,12 +437,12 @@ public class SpaceInvaders extends SimpleApplication {
                 gameRound = 1;
                 roundText.setLocalScale(.04f);
                 roundText.setLocalTranslation(-2.7f, 2, 0);
-                rootNode.attachChild(roundText);
+                gameNode.attachChild(roundText);
             } else if (name.equals("Score Board") && !game) {
                 goTo(leaderNode);
             } else if (name.equals("Menu")) {
-                //if (roundText.getText().contains("G")||roundText.getText().contains("R")))
-                endGame();
+                if (roundText.getText().contains("G"))
+                    endGame();
                 goTo(menuNode);
             } else if (name.equals("Mute") && keyPressed)
                 muteSound();
@@ -576,9 +576,7 @@ public class SpaceInvaders extends SimpleApplication {
             else
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
-        if (gameScore.getScore() >= highScore) {
-            H2Manager.INSTANCE.addScore(gameScore);
-        }
+        H2Manager.INSTANCE.addScore(gameScore);
         gameScore.addScore(-gameScore.getScore());
         gameNode.detachChild(lives);
         makeLives();
@@ -602,10 +600,10 @@ public class SpaceInvaders extends SimpleApplication {
     private void reset() {
         if (pause())
             pause();
-        rootNode.detachChild(roundText);
+        gameNode.detachChild(roundText);
         if(game)
             roundText.setText("Round " + gameRound);
-        rootNode.attachChild(roundText);
+        gameNode.attachChild(roundText);
         gameNode.detachChild(enemyNode);
         enemyNode = invaderNode();
         enemyNode.setLocalTranslation(-6, -1, -9);
