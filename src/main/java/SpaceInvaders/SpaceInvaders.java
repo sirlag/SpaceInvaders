@@ -189,7 +189,7 @@ public class SpaceInvaders extends SimpleApplication {
         BitmapText b = new BitmapText(f,false);
         b.setText(text);
         b.setLocalScale(s);
-        b.setLocalTranslation(x,y,z);
+        b.setLocalTranslation(x, y, z);
         guiNode.attachChild(b);
         node.attachChild(b);
     }
@@ -198,6 +198,14 @@ public class SpaceInvaders extends SimpleApplication {
         leaderNode = new Node("LeaderBoardNodes");
         makeText(myFont, "Leader Board", .035f, -5.5f,2.8f, 0, leaderNode);
         makeText(myFont, "To menu   backspace", .0068f, 2.62f, 2.8f, 1, leaderNode);
+
+        int i = 0;
+        for(Score s : H2Manager.INSTANCE.getScores()) {
+            if (i > 10)
+                break;
+            makeText(myFont, s.toString(), .035f, -6.5f+(-.1f*i), 2.8f, 0, leaderNode);
+            i++;
+        }
 
         Box space = new Box(.8f, .3f, .1f);
         makeKey(space, makeColoredMaterial(ColorRGBA.DarkGray), 5.5f, 3, 0, leaderNode);
@@ -348,12 +356,12 @@ public class SpaceInvaders extends SimpleApplication {
 
         Node borderNode = new Node("Border");
 
-        makeKey(width,material, 0, h, 0, borderNode);
-        makeKey(width,material,0,-h,0,borderNode);
-        makeKey(height,material,-w,0,0,borderNode);
+        makeKey(width, material, 0, h, 0, borderNode);
+        makeKey(width, material, 0, -h, 0, borderNode);
+        makeKey(height, material, -w, 0, 0, borderNode);
         makeKey(height,material,w,0,0,borderNode);
-        makeKey(width,makeColoredMaterial(ColorRGBA.Black),0,h + 1,-6,borderNode);
-        makeKey(width,makeColoredMaterial(ColorRGBA.Black),0,-h,-6,borderNode);
+        makeKey(width, makeColoredMaterial(ColorRGBA.Black), 0, h + 1, -6, borderNode);
+        makeKey(width, makeColoredMaterial(ColorRGBA.Black), 0, -h, -6, borderNode);
 
         borderNode.getChildren().forEach(com.jme3.scene.Spatial::updateModelBound);
 

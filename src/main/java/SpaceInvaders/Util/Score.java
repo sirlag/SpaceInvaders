@@ -18,7 +18,7 @@ public class Score {
     }
 
     public String toString() {
-        return String.format("Score : %d - Initials : %s", score, initials);
+        return String.format("%d - %s", score, initials);
     }
 
     public void addScore(int i){

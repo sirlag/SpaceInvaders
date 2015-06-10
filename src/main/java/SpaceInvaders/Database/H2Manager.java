@@ -83,7 +83,7 @@ public enum H2Manager {
             rs = stat.executeQuery("SELECT * FROM Scores");
 
             while (rs.next()) {
-                Score temp = new Score(rs.getInt(0), rs.getString(1));
+                Score temp = new Score(rs.getInt(1), rs.getString(2));
                 scores.add(temp);
             }
         } catch (SQLException ex){
