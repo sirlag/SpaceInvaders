@@ -64,6 +64,7 @@ public class SpaceInvaders extends SimpleApplication {
         ufoExists = false;
 
         bulletNode = new Node("Bullets");
+        leaderNode = new Node("LeaderBoardNodes");
 
         gameNode = new Node("game nodes");
         gameNode.attachChild(border);
@@ -195,7 +196,6 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     public void createLeaderBoard() {
-        leaderNode = new Node("LeaderBoardNodes");
         makeText(myFont, "Leader Board", .035f, -5.5f,2.8f, 0, leaderNode);
         makeText(myFont, "To menu   backspace", .0068f, 2.62f, 2.8f, 1, leaderNode);
 
@@ -225,7 +225,7 @@ public class SpaceInvaders extends SimpleApplication {
                 scoreText.setText("Score: " + gameScore.getScore());
                 super.simpleUpdate(tpf);
             }
-            if ((iter + 1) % 6000 == 0 && !ufoExists) {
+            if ((iter + 1) % 10000 == 0 && !ufoExists) {
                 makeUFO();
             }
             if ((iter + 1) % (450 - 2 * gameRound) == 0)
@@ -389,15 +389,15 @@ public class SpaceInvaders extends SimpleApplication {
             switch (i / 11) {
                 //rotates invaders to center only at beginning
                 case 0:
-                    node.attachChild(makeInvader(ColorRGBA.Pink, offset));//.rotate(FastMath.PI / 8, (FastMath.PI / 100) * (5 - i % 11), 0));
+                    node.attachChild(makeInvader(ColorRGBA.randomColor(), offset));//.rotate(FastMath.PI / 8, (FastMath.PI / 100) * (5 - i % 11), 0));
                     break;
                 case 1:
                 case 2:
-                    node.attachChild(makeInvader(ColorRGBA.Blue, offset));//.rotate(FastMath.PI / (i / 11 * 16), (FastMath.PI / 100) * (5 - i % 11), 0));
+                    node.attachChild(makeInvader(ColorRGBA.randomColor(), offset));//.rotate(FastMath.PI / (i / 11 * 16), (FastMath.PI / 100) * (5 - i % 11), 0));
                     break;
                 case 3:
                 case 4:
-                    node.attachChild(makeInvader(ColorRGBA.Green, offset));//.rotate(0, (FastMath.PI / 100) * (5 - i % 11), 0));
+                    node.attachChild(makeInvader(ColorRGBA.randomColor(), offset));//.rotate(0, (FastMath.PI / 100) * (5 - i % 11), 0));
                     break;
             }
         }
@@ -421,7 +421,7 @@ public class SpaceInvaders extends SimpleApplication {
                     movePlayer(1);
                 } else
                     dir = 0;
-            else if (name.equals("Move Right") && dir != 1)
+            else if (name.equals("Move Right") && dir != 1 && game)
                 if (movePlayer(1)) {
                     dir = 1;
                     movePlayer(-1);
@@ -577,6 +577,9 @@ public class SpaceInvaders extends SimpleApplication {
                 s.setCullHint(Spatial.CullHint.Inherit);
         }
         H2Manager.INSTANCE.addScore(gameScore);
+        rootNode.detachChild(leaderNode);
+        leaderNode.detachAllChildren();
+        createLeaderBoard();
         gameScore.addScore(-gameScore.getScore());
         gameNode.detachChild(lives);
         makeLives();
