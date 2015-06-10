@@ -118,41 +118,14 @@ public class SpaceInvaders extends SimpleApplication {
 
         myFont = assetManager.loadFont("assets/Fonts/Arcadepix.fnt");
 
-        BitmapText Title = new BitmapText(myFont, false);
-        BitmapText start = new BitmapText(myFont, false);
-        BitmapText leader = new BitmapText(myFont, false);
-        BitmapText keyText = new BitmapText(myFont, false);
-        BitmapText keyText2 = new BitmapText(myFont, false);
-
-        start.setText("Start - Press Enter");
-        Title.setText("Space Invaders");
-        leader.setText("Leader Boards - Press Shift");
-        keyText.setText("Movement <- ->       space  shoot");
-        keyText2.setText("         A  S");
-
-        Title.setLocalScale(.04f);
-        start.setLocalScale(.012f);
-        leader.setLocalScale(.012f);
-        keyText.setLocalScale(.013f);
-        keyText2.setLocalScale(.013f);
-
-        Title.setLocalTranslation(-6.35f, 3, 0);
-        start.setLocalTranslation(-2.0f, 1.2f, 0);
-        leader.setLocalTranslation(-4.3f, .51f, 0);
-        keyText.setLocalTranslation(-5.465f, -2.51f, 0);
-        keyText2.setLocalTranslation(-5.465f, -3.15f, 0);
-
-        guiNode.attachChild(Title);
-        guiNode.attachChild(start);
-        guiNode.attachChild(leader);
-        guiNode.attachChild(keyText);
-        guiNode.attachChild(keyText2);
         Node menuTextNode = new Node("text");
-        menuTextNode.attachChild(start);
-        menuTextNode.attachChild(Title);
-        menuTextNode.attachChild(leader);
-        menuTextNode.attachChild(keyText);
-        menuTextNode.attachChild(keyText2);
+
+        makeText(myFont, "Space Invaders", .04f,-6.35f, 3, 0, menuTextNode);
+        makeText(myFont,"Start - Press Enter", .012f,-2.0f, 1.2f, 0,menuTextNode);
+        makeText(myFont,"Leader Boards - Press Shift",.012f,-4.3f, .51f, 0,menuTextNode);
+        makeText(myFont, "Movement <- ->       space  shoot",.013f,-5.465f, -2.51f, 0,menuTextNode);
+        makeText(myFont, "         A  S",.013f,-5.465f, -3.15f, 0,menuTextNode);
+
         menuNode.attachChild(menuTextNode);
         //rootNode.attachChild(menuTextNode);
 
@@ -211,22 +184,20 @@ public class SpaceInvaders extends SimpleApplication {
             reset();
     }
 
+    private void makeText(BitmapFont f, String text, float s,float x, float y, float z, Node node)
+    {
+        BitmapText b = new BitmapText(f,false);
+        b.setText(text);
+        b.setLocalScale(s);
+        b.setLocalTranslation(x,y,z);
+        guiNode.attachChild(b);
+        node.attachChild(b);
+    }
+
     public void createLeaderBoard() {
         leaderNode = new Node("LeaderBoardNodes");
-        BitmapText Title = new BitmapText(myFont, false);
-        Title.setText("Leader Board");
-        Title.setLocalScale(.035f);
-        Title.setLocalTranslation(-5.5f, 2.8f, 0);
-        BitmapText backSpace = new BitmapText(myFont, false);
-        backSpace.setText("To menu   backspace");
-        backSpace.setLocalScale(.0068f);
-        backSpace.setLocalTranslation(2.62f, 2.8f, 1);
-
-        guiNode.attachChild(backSpace);
-        guiNode.attachChild(Title);
-
-        leaderNode.attachChild(backSpace);
-        leaderNode.attachChild(Title);
+        makeText(myFont, "Leader Board", .035f, -5.5f,2.8f, 0, leaderNode);
+        makeText(myFont, "To menu   backspace", .0068f, 2.62f, 2.8f, 1, leaderNode);
 
         Box space = new Box(.8f, .3f, .1f);
         makeKey(space, makeColoredMaterial(ColorRGBA.DarkGray), 5.5f, 3, 0, leaderNode);
@@ -375,37 +346,14 @@ public class SpaceInvaders extends SimpleApplication {
         Box width = new Box(w, 1, 3);
         Box height = new Box(1, h, 3);
 
-        Geometry top = new Geometry("Top", width);
-        top.setMaterial(material);
-        top.setLocalTranslation(0, h, 0);
-
-        Geometry bottom = new Geometry("Bottom", width);
-        bottom.setMaterial(material);
-        bottom.setLocalTranslation(0, -h, 0);
-
-        Geometry leftSide = new Geometry("Left Side", height);
-        leftSide.setMaterial(material);
-        leftSide.setLocalTranslation(-w, 0, 0);
-
-        Geometry rightSide = new Geometry("Right Side", height);
-        rightSide.setMaterial(material);
-        rightSide.setLocalTranslation(w, 0, 0);
-
-        Geometry pseudoTop = new Geometry("pseudo top", width);
-        pseudoTop.setMaterial(makeColoredMaterial(ColorRGBA.Black));
-        pseudoTop.setLocalTranslation(0, h + 1, -6);
-
-        Geometry pseudoBottom = new Geometry("pseudo Bottom", width);
-        pseudoBottom.setMaterial(makeColoredMaterial(ColorRGBA.Black));
-        pseudoBottom.setLocalTranslation(0, -h, -6);
-
         Node borderNode = new Node("Border");
-        borderNode.attachChild(top);
-        borderNode.attachChild(bottom);
-        borderNode.attachChild(leftSide);
-        borderNode.attachChild(rightSide);
-        borderNode.attachChild(pseudoTop);
-        borderNode.attachChild(pseudoBottom);
+
+        makeKey(width,material, 0, h, 0, borderNode);
+        makeKey(width,material,0,-h,0,borderNode);
+        makeKey(height,material,-w,0,0,borderNode);
+        makeKey(height,material,w,0,0,borderNode);
+        makeKey(width,makeColoredMaterial(ColorRGBA.Black),0,h + 1,-6,borderNode);
+        makeKey(width,makeColoredMaterial(ColorRGBA.Black),0,-h,-6,borderNode);
 
         borderNode.getChildren().forEach(com.jme3.scene.Spatial::updateModelBound);
 
@@ -479,7 +427,6 @@ public class SpaceInvaders extends SimpleApplication {
             } else if (name.equals("Start") && keyPressed && !roundText.getText().contains("G")) {
                 goTo(gameNode);
                 gameRound = 1;
-                roundText.setText("Round 1");
                 roundText.setLocalScale(.04f);
                 roundText.setLocalTranslation(-2.7f, 2, 0);
                 rootNode.attachChild(roundText);
@@ -498,10 +445,11 @@ public class SpaceInvaders extends SimpleApplication {
 
     }
 
-    private void pause()
+    private boolean pause()
     {
         game = !game;
         muteSound();
+        return  !game;
     }
 
     public void moveEnemyNode() {
@@ -624,6 +572,9 @@ public class SpaceInvaders extends SimpleApplication {
             H2Manager.INSTANCE.addScore(gameScore);
         }
         gameScore.addScore(-gameScore.getScore());
+        gameNode.detachChild(lives);
+        makeLives();
+        gameNode.attachChild(lives);
         reset();
         music_sound.stop();
         ufo_sound.stop();
@@ -641,6 +592,8 @@ public class SpaceInvaders extends SimpleApplication {
     }
 
     private void reset() {
+        if (pause())
+            pause();
         rootNode.detachChild(roundText);
         if(game)
             roundText.setText("Round " + gameRound);
