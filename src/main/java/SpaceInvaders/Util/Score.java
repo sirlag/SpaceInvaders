@@ -16,6 +16,11 @@ public class Score {
     public String getInitials() {
         return initials;
     }
+    
+    public void setInitials(String i)
+    {
+        initials = i;
+    }
 
     public String toString() {
         return String.format("%d - %s", score, initials);
