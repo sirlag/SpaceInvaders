@@ -533,7 +533,7 @@ public class SpaceInvaders extends SimpleApplication {
                 return;
             }
         }
-        ufoNode.getChild(1).move(.003f * ufoD, 0, 0);
+        ufoNode.getChild(1).move(.004f * ufoD, 0, 0);
     }
 
     private void AttachSounds(){
