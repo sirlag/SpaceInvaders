@@ -20,6 +20,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.ui.Picture;
 
+import javax.swing.*;
 import java.util.Optional;
 import java.util.Random;
 
@@ -567,6 +568,10 @@ public class SpaceInvaders extends SimpleApplication {
     {
         roundText.setText("Game Over");
         pause();
+
+        String name = JOptionPane.showInputDialog("Initials: ");
+        name = name.length() == 3 ? name.toUpperCase() : "ERR";
+        gameScore.setInitials(name);
     }
 
     private void endGame() {
@@ -588,7 +593,6 @@ public class SpaceInvaders extends SimpleApplication {
         reset();
         music_sound.stop();
         ufo_sound.stop();
-
     }
 
     private void roundEnded()
@@ -751,18 +755,18 @@ public class SpaceInvaders extends SimpleApplication {
             shoot_sound.setVolume(0);
             ufo_sound.setVolume(0);
             music_sound.setVolume(0);
-            muted = true;
             guiNode.attachChild(muteImage);
             rootNode.attachChild(muteImage);
+            muted = true;
         }
         else{
             music_sound.setVolume(3);
             bounce_sound.setVolume(5);
             shoot_sound.setVolume(2);
             ufo_sound.setVolume(.5f);
-            muted = false;
             guiNode.detachChild(muteImage);
             rootNode.detachChild(muteImage);
+            muted = false;
         }
     }
 }
